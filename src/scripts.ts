@@ -33,7 +33,7 @@ const simplifyToOrderList = (toOrderList: ToOrderList) => {
 }
 
 
-export const generateToOrdersList = async (daysToShipFile: File, bigSellerOrdersFile: File): Promise<ToOrderListSimple> => {
+export const generateToOrderList = async (daysToShipFile: File, bigSellerOrdersFile: File): Promise<ToOrderListSimple> => {
   const daysToShipWorkbook = XLSX.read(await daysToShipFile?.arrayBuffer());
 
   // Assuming the first sheet is the one you want to read

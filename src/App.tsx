@@ -1,16 +1,21 @@
-import React, { useState } from "react";
-import { generateToOrdersList } from "./scripts";
+import React, { useEffect, useState } from "react";
 import ToOrderListItem from "./components/ToOrderListItem";
 import { ToOrderListSimple } from "./scripts";
+import { ToOrderListsItem, addToOrderList, getToOrderLists } from "./api";
+import ListGeneratorForm from "./components/ListGeneratorForm";
 
 const USERS = ["CJ", "Shia", "Jenna", "Freya", "Xander"];
 
 const App = () => {
   const [currentUser, setUser] = useState<string>("");
-  const [daysToShipFile, setDaysToShipFile] = useState<File | null>(null);
-  const [bigSellerOrdersFile, setBigSellerOrdersFile] = useState<File | null>(
-    null
-  );
+  const [toOrderLists, setToOrderLists] = useState<ToOrderListsItem[]>([]);
+  const [toOrderList, setToOrderList] = useState<ToOrderListSimple>({});
+
+  useEffect(() => {
+    if (currentUser) {
+      setToOrderLists(getToOrderLists(currentUser));
+    }
+  }, [currentUser]);
 
   const handleUserChange: React.ChangeEventHandler<HTMLSelectElement> = (
     event
@@ -18,31 +23,17 @@ const App = () => {
     setUser(event.target.value);
   };
 
-  const [toOrderList, setToOrderList] = useState<ToOrderListSimple>({});
-
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    setter: React.Dispatch<React.SetStateAction<File | null>>
+  const handleListGeneratorFormSubmit = (
+    generatedToOrderList: ToOrderListSimple
   ) => {
-    if (event.target.files) {
-      const file = event.target.files[0];
-      setter(file);
-    }
+    setToOrderList(generatedToOrderList);
+    addToOrderList(currentUser, generatedToOrderList);
   };
 
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (
+  const handleToOrderListChange: React.ChangeEventHandler<HTMLSelectElement> = (
     event
   ) => {
-    event.preventDefault();
-
-    if (daysToShipFile !== null && bigSellerOrdersFile !== null) {
-      const toOrdersList = await generateToOrdersList(
-        daysToShipFile,
-        bigSellerOrdersFile
-      );
-
-      setToOrderList(toOrdersList);
-    }
+    setToOrderList(toOrderLists[parseInt(event.target.value)].toOrderList);
   };
 
   return (
@@ -51,7 +42,7 @@ const App = () => {
         {currentUser ? "Change User:" : "Please Select User:"}{" "}
       </label>{" "}
       <select
-        name="users"
+        name="usersSelection"
         id="usersSelection"
         onChange={handleUserChange}
         value={currentUser}
@@ -60,33 +51,35 @@ const App = () => {
           -----
         </option>
         {USERS.map((user) => (
-          <option>{user}</option>
+          <option value={user}>{user}</option>
         ))}
       </select>
       {currentUser && (
-        <form onSubmit={handleSubmit}>
-          <br />
-          <label htmlFor="dtsFileInput">Days to Ship File</label> <br />
-          <input
-            id="dtsFileInput"
-            type="file"
-            onChange={(event) => handleFileChange(event, setDaysToShipFile)}
-          />
-          <br />
-          <br />
-          <label htmlFor="ordersFileInput">BigSeller Orders File</label> <br />
-          <input
-            id="ordersFileInput"
-            type="file"
-            onChange={(event) =>
-              handleFileChange(event, setBigSellerOrdersFile)
-            }
-          />
-          <br />
-          <br />
-          <input type="submit" />
-          <br />
-        </form>
+        <>
+          {toOrderLists.length ? (
+            <>
+              <label htmlFor="toOrderListSelection">
+                {" "}
+                Previously Generated:{" "}
+              </label>
+              <select
+                name="toOrderListSelection"
+                id="toOrderListSelection"
+                onChange={handleToOrderListChange}
+              >
+                <option value="" disabled selected>
+                  -----
+                </option>
+                {toOrderLists.map((toOrderList) => (
+                  <option value={toOrderList.id}>{toOrderList.datetime}</option>
+                ))}
+              </select>
+            </>
+          ) : (
+            "(Generate your first List)"
+          )}
+          <ListGeneratorForm handleSubmit={handleListGeneratorFormSubmit} />
+        </>
       )}
       {Object.keys(toOrderList).map((supplierCode, index) => (
         <ToOrderListItem
