@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { generateToOrdersList } from "./scripts";
 import ToOrderListItem from "./components/ToOrderListItem";
+import { ToOrderListSimple } from "./scripts";
 
 const App = () => {
   const [daysToShipFile, setDaysToShipFile] = useState<File | null>(null);
@@ -8,9 +9,7 @@ const App = () => {
     null
   );
 
-  const [toOrderList, setToOrderList] = useState<{
-    [key: string]: { [key: string]: { [key: string]: number } };
-  }>({});
+  const [toOrderList, setToOrderList] = useState<ToOrderListSimple>({});
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -63,7 +62,7 @@ const App = () => {
         <ToOrderListItem
           key={index}
           supplierCode={supplierCode}
-          toOrderListItem={toOrderList[supplierCode]}
+          productsToOrderText={toOrderList[supplierCode]}
         />
       ))}
     </div>

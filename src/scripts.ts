@@ -1,22 +1,39 @@
 // XLSX is a global from the standalone script
 import * as XLSX from "xlsx"
 
-interface ProductVariation {
-  variationName: string,
-  quantity: number
+interface ToOrderList  {
+  // Supplier Code => Product Name => Variation => Quantity
+  [key: string]: { [key: string]: { [key: string]: number } }
 }
 
-interface Product {
-  productName: string,
-  variations: ProductVariation[]
+export interface ToOrderListSimple {
+  // Supplier Code => Product List (includes formattings\n) free form text
+  [key: string]: string
 }
 
-type ToOrderListItem = {
-  supplierCode: string,
-  products: Product[]
+const simplifyToOrderList = (toOrderList: ToOrderList) => {
+  const simplifiedToOrderList: ToOrderListSimple = {}
+
+  for (let supplierCode in toOrderList) {
+    let temporaryValue = "";
+    const toOrderListItem = toOrderList[supplierCode];
+    for (let productName in toOrderList[supplierCode]) {
+      temporaryValue += `${productName
+        .match(/^[a-zA-Z0-9\s-]+/)?.[0]
+        .toUpperCase()}\n`;
+        for (let variation in toOrderListItem[productName]) {
+          temporaryValue += `${toOrderListItem[productName][variation]} ${variation} \n`;
+        }
+        temporaryValue += "\n";
+      }
+      simplifiedToOrderList[supplierCode] = temporaryValue;
+    }
+
+    return simplifiedToOrderList
 }
 
-export const generateToOrdersList = async (daysToShipFile: File, bigSellerOrdersFile: File) => {
+
+export const generateToOrdersList = async (daysToShipFile: File, bigSellerOrdersFile: File): Promise<ToOrderListSimple> => {
   const daysToShipWorkbook = XLSX.read(await daysToShipFile?.arrayBuffer());
 
   // Assuming the first sheet is the one you want to read
@@ -65,9 +82,7 @@ export const generateToOrdersList = async (daysToShipFile: File, bigSellerOrders
   const startingRow = 2;
   // This (toOrderList) will be a mapping of the products needed to be ordered.
   // Mapping toOrderlist -> SupplierCode/ParentSKU -> Product Name -> Variation -> Quantity
-  const toOrderList: {
-    [key: string]: { [key: string]: { [key: string]: number } };
-  } = {};
+  const toOrderList: ToOrderList = {};
 
 
 
@@ -101,6 +116,7 @@ export const generateToOrdersList = async (daysToShipFile: File, bigSellerOrders
     }
   }
 
-  return toOrderList;
+  return simplifyToOrderList(toOrderList);
 }
+
 
