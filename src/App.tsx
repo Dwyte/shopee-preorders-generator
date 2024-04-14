@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { generateToOrdersList } from "./scripts";
+import ToOrderListItem from "./components/ToOrderListItem";
 
 const App = () => {
   const [daysToShipFile, setDaysToShipFile] = useState<File | null>(null);
@@ -59,26 +60,11 @@ const App = () => {
       {/* {["a"].map((supplierCode) => <div>{supplierCode}<div/>)} */}
 
       {Object.keys(toOrderList).map((supplierCode, index) => (
-        <div key={index}>
-          ---------------------------------
-          <br />
-          {supplierCode} <br />
-          {Object.keys(toOrderList[supplierCode]).map((productName) => (
-            <>
-              {productName} <br />
-              {Object.keys(toOrderList[supplierCode][productName]).map(
-                (variation) => (
-                  <>
-                    {toOrderList[supplierCode][productName][variation]}{" "}
-                    {variation}
-                    <br />
-                  </>
-                )
-              )}
-              <br />
-            </>
-          ))}
-        </div>
+        <ToOrderListItem
+          key={index}
+          supplierCode={supplierCode}
+          toOrderListItem={toOrderList[supplierCode]}
+        />
       ))}
     </div>
   );
