@@ -6,9 +6,14 @@ interface Props {
 }
 
 const ToOrderListItem = ({ supplierCode, toOrderListItem }: Props) => {
-  const [productsToOrder, setProductsToOrder] = useState<string>("");
+  const [productsToOrderText, setProductsToOrderText] = useState<string>("");
+
+  const handleCopyToClipboard = () => {
+    navigator.clipboard.writeText(productsToOrderText);
+  };
+
   useEffect(() => {
-    setProductsToOrder(() => {
+    setProductsToOrderText(() => {
       let temporaryValue = "";
       for (let productName in toOrderListItem) {
         temporaryValue +=
@@ -26,8 +31,16 @@ const ToOrderListItem = ({ supplierCode, toOrderListItem }: Props) => {
   return (
     <div>
       <br />
-      {supplierCode} <br />
-      <textarea id="" cols={75} rows={25} value={productsToOrder} readOnly />
+      {supplierCode}{" "}
+      <button onClick={handleCopyToClipboard}> Copy to Clipboard </button>{" "}
+      <br />
+      <textarea
+        id=""
+        cols={75}
+        rows={25}
+        value={productsToOrderText}
+        readOnly
+      />
     </div>
   );
 };
