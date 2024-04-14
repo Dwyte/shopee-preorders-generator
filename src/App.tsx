@@ -47,37 +47,47 @@ const App = () => {
 
   return (
     <div>
+      <label htmlFor="usersSelection">
+        {currentUser ? "Change User:" : "Please Select User:"}{" "}
+      </label>{" "}
       <select
         name="users"
         id="usersSelection"
         onChange={handleUserChange}
         value={currentUser}
       >
+        <option value="" disabled selected>
+          -----
+        </option>
         {USERS.map((user) => (
           <option>{user}</option>
         ))}
       </select>
-
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="dtsFileInput">Days to Ship File</label> <br />
-        <input
-          id="dtsFileInput"
-          type="file"
-          onChange={(event) => handleFileChange(event, setDaysToShipFile)}
-        />
-        <br />
-        <label htmlFor="ordersFileInput">BigSeller Orders File</label> <br />
-        <input
-          id="ordersFileInput"
-          type="file"
-          onChange={(event) => handleFileChange(event, setBigSellerOrdersFile)}
-        />
-        <br />
-        <input type="submit" />
-      </form>
-
-      {/* {["a"].map((supplierCode) => <div>{supplierCode}<div/>)} */}
-
+      {currentUser && (
+        <form onSubmit={handleSubmit}>
+          <br />
+          <label htmlFor="dtsFileInput">Days to Ship File</label> <br />
+          <input
+            id="dtsFileInput"
+            type="file"
+            onChange={(event) => handleFileChange(event, setDaysToShipFile)}
+          />
+          <br />
+          <br />
+          <label htmlFor="ordersFileInput">BigSeller Orders File</label> <br />
+          <input
+            id="ordersFileInput"
+            type="file"
+            onChange={(event) =>
+              handleFileChange(event, setBigSellerOrdersFile)
+            }
+          />
+          <br />
+          <br />
+          <input type="submit" />
+          <br />
+        </form>
+      )}
       {Object.keys(toOrderList).map((supplierCode, index) => (
         <ToOrderListItem
           key={index}
