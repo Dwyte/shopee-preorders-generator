@@ -3,11 +3,20 @@ import { generateToOrdersList } from "./scripts";
 import ToOrderListItem from "./components/ToOrderListItem";
 import { ToOrderListSimple } from "./scripts";
 
+const USERS = ["CJ", "Shia", "Jenna", "Freya", "Xander"];
+
 const App = () => {
+  const [currentUser, setUser] = useState<string>("");
   const [daysToShipFile, setDaysToShipFile] = useState<File | null>(null);
   const [bigSellerOrdersFile, setBigSellerOrdersFile] = useState<File | null>(
     null
   );
+
+  const handleUserChange: React.ChangeEventHandler<HTMLSelectElement> = (
+    event
+  ) => {
+    setUser(event.target.value);
+  };
 
   const [toOrderList, setToOrderList] = useState<ToOrderListSimple>({});
 
@@ -38,6 +47,17 @@ const App = () => {
 
   return (
     <div>
+      <select
+        name="users"
+        id="usersSelection"
+        onChange={handleUserChange}
+        value={currentUser}
+      >
+        {USERS.map((user) => (
+          <option>{user}</option>
+        ))}
+      </select>
+
       <form onSubmit={handleSubmit}>
         <label htmlFor="dtsFileInput">Days to Ship File</label> <br />
         <input
