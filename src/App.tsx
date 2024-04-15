@@ -12,9 +12,11 @@ const App = () => {
   const [toOrderList, setToOrderList] = useState<ToOrderListSimple>({});
 
   useEffect(() => {
-    if (currentUser) {
-      setToOrderLists(getToOrderLists(currentUser));
-    }
+    const fetchUserData = async () => {
+      const userToOrderLists = await getToOrderLists(currentUser);
+      setToOrderLists(userToOrderLists);
+    };
+    fetchUserData();
   }, [currentUser]);
 
   const handleUserChange: React.ChangeEventHandler<HTMLSelectElement> = (
@@ -23,11 +25,11 @@ const App = () => {
     setUser(event.target.value);
   };
 
-  const handleListGeneratorFormSubmit = (
+  const handleListGeneratorFormSubmit = async (
     generatedToOrderList: ToOrderListSimple
   ) => {
     setToOrderList(generatedToOrderList);
-    addToOrderList(currentUser, generatedToOrderList);
+    await addToOrderList(currentUser, generatedToOrderList);
   };
 
   const handleToOrderListChange: React.ChangeEventHandler<HTMLSelectElement> = (
