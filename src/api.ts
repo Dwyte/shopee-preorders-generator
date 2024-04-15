@@ -25,6 +25,28 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const GENERATED_LISTS_COLLECTION_NAME = "generatedLists";
 
+export const getUserGeneratedListsLocal = (user: string) => {
+  return JSON.parse(localStorage.getItem(user) || "[]");
+};
+
+export const addUserGeneratedListLocal = (
+  user: string,
+  generatedList: GeneratedList
+) => {
+  const userGeneratedLists: UserGeneratedList[] =
+    getUserGeneratedListsLocal(user);
+
+  const newUserGeneratedList = {
+    user,
+    datetime: new Date().toISOString(),
+    generatedList,
+  };
+
+  userGeneratedLists.push(newUserGeneratedList);
+  localStorage.setItem(user, JSON.stringify(userGeneratedLists));
+  return newUserGeneratedList;
+};
+
 export const getUserGeneratedLists = async (user: string) => {
   try {
     const docRef = collection(db, GENERATED_LISTS_COLLECTION_NAME);
