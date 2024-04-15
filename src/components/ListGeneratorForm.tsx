@@ -1,11 +1,17 @@
 import { useState } from "react";
-import { ToOrderListSimple, generateToOrderList } from "../scripts";
+import { generateListFromFiles } from "../scripts";
+import { GeneratedList } from "../types";
 
 const ListGeneratorForm = ({
   handleSubmit,
 }: {
-  handleSubmit: (a: ToOrderListSimple) => void;
+  handleSubmit: (a: GeneratedList) => void;
 }) => {
+  const [daysToShipFile, setDaysToShipFile] = useState<File | null>(null);
+  const [bigSellerOrdersFile, setBigSellerOrdersFile] = useState<File | null>(
+    null
+  );
+
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     setter: React.Dispatch<React.SetStateAction<File | null>>
@@ -16,21 +22,16 @@ const ListGeneratorForm = ({
     }
   };
 
-  const [daysToShipFile, setDaysToShipFile] = useState<File | null>(null);
-  const [bigSellerOrdersFile, setBigSellerOrdersFile] = useState<File | null>(
-    null
-  );
-
   const onSubmit: React.FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
 
     if (daysToShipFile !== null && bigSellerOrdersFile !== null) {
-      const toOrdersList = await generateToOrderList(
+      const generatedList = await generateListFromFiles(
         daysToShipFile,
         bigSellerOrdersFile
       );
 
-      handleSubmit(toOrdersList);
+      handleSubmit(generatedList);
     }
   };
 

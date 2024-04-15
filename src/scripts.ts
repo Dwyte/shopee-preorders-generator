@@ -1,39 +1,32 @@
 // XLSX is a global from the standalone script
-import * as XLSX from "xlsx"
+import * as XLSX from "xlsx";
+import { GeneratedListMap, GeneratedList } from "./types";
 
-interface ToOrderList  {
-  // Supplier Code => Product Name => Variation => Quantity
-  [key: string]: { [key: string]: { [key: string]: number } }
-}
+const simplifyGeneratedList = (generatedListMap: GeneratedListMap) => {
+  const simplifiedGeneratedList: GeneratedList = {};
 
-export interface ToOrderListSimple {
-  // Supplier Code => Product List (includes formattings\n) free form text
-  [key: string]: string
-}
-
-const simplifyToOrderList = (toOrderList: ToOrderList) => {
-  const simplifiedToOrderList: ToOrderListSimple = {}
-
-  for (let supplierCode in toOrderList) {
+  for (let supplierCode in generatedListMap) {
     let temporaryValue = "";
-    const toOrderListItem = toOrderList[supplierCode];
-    for (let productName in toOrderList[supplierCode]) {
+    const generatedListItem = generatedListMap[supplierCode];
+    for (let productName in generatedListMap[supplierCode]) {
       temporaryValue += `${productName
         .match(/^[a-zA-Z0-9\s-]+/)?.[0]
         .toUpperCase()}\n`;
-        for (let variation in toOrderListItem[productName]) {
-          temporaryValue += `${toOrderListItem[productName][variation]} ${variation} \n`;
-        }
-        temporaryValue += "\n";
+      for (let variation in generatedListItem[productName]) {
+        temporaryValue += `${generatedListItem[productName][variation]} ${variation} \n`;
       }
-      simplifiedToOrderList[supplierCode] = temporaryValue;
+      temporaryValue += "\n";
     }
+    simplifiedGeneratedList[supplierCode] = temporaryValue;
+  }
 
-    return simplifiedToOrderList
-}
+  return simplifiedGeneratedList;
+};
 
-
-export const generateToOrderList = async (daysToShipFile: File, bigSellerOrdersFile: File): Promise<ToOrderListSimple> => {
+export const generateListFromFiles = async (
+  daysToShipFile: File,
+  bigSellerOrdersFile: File
+): Promise<GeneratedList> => {
   const daysToShipWorkbook = XLSX.read(await daysToShipFile?.arrayBuffer());
 
   // Assuming the first sheet is the one you want to read
@@ -80,11 +73,9 @@ export const generateToOrderList = async (daysToShipFile: File, bigSellerOrdersF
   );
 
   const startingRow = 2;
-  // This (toOrderList) will be a mapping of the products needed to be ordered.
-  // Mapping toOrderlist -> SupplierCode/ParentSKU -> Product Name -> Variation -> Quantity
-  const toOrderList: ToOrderList = {};
-
-
+  // This (generatedListMap) will be a mapping of the products needed to be ordered.
+  // Mapping generatedListMap -> SupplierCode/ParentSKU -> Product Name -> Variation -> Quantity
+  const generatedListMap: GeneratedListMap = {};
 
   for (
     let rowIndex = startingRow - 1;
@@ -102,21 +93,18 @@ export const generateToOrderList = async (daysToShipFile: File, bigSellerOrdersF
       const supplierCode: string = preOrderProducts[productName];
 
       // Set default to empty object
-      toOrderList[supplierCode] ??= {};
+      generatedListMap[supplierCode] ??= {};
 
       // Set default to empty object
-      toOrderList[supplierCode][productName] ??= {};
+      generatedListMap[supplierCode][productName] ??= {};
 
       // Set default to 0
-      toOrderList[supplierCode][productName][variationName] ??= 0;
+      generatedListMap[supplierCode][productName][variationName] ??= 0;
 
       // Increase the quantity we need to order for this product
-      toOrderList[supplierCode][productName][variationName] += quantity;
-      console.log(toOrderList);
+      generatedListMap[supplierCode][productName][variationName] += quantity;
     }
   }
 
-  return simplifyToOrderList(toOrderList);
-}
-
-
+  return simplifyGeneratedList(generatedListMap);
+};

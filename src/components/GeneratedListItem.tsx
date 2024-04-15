@@ -3,7 +3,7 @@ interface Props {
   productsToOrderText: string;
 }
 
-const ToOrderListItem = ({ supplierCode, productsToOrderText }: Props) => {
+const GeneratedListItem = ({ supplierCode, productsToOrderText }: Props) => {
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(productsToOrderText);
   };
@@ -25,4 +25,4 @@ const ToOrderListItem = ({ supplierCode, productsToOrderText }: Props) => {
   );
 };
 
-export default ToOrderListItem;
+export default GeneratedListItem;

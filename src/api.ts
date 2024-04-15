@@ -8,7 +8,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { ToOrderListSimple } from "./scripts";
+import { GeneratedList, UserGeneratedList } from "./types";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -23,56 +23,40 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const GENERATED_LISTS_COLLECTION_NAME = "generatedLists";
 
-export interface ToOrderListsItem {
-  id: number;
-  datetime: string;
-  toOrderList: ToOrderListSimple;
-}
-
-export const getToOrderLists = async (user: string) => {
+export const getUserGeneratedLists = async (user: string) => {
   try {
-    const docRef = collection(db, "toOrderLists");
+    const docRef = collection(db, GENERATED_LISTS_COLLECTION_NAME);
     const q = query(docRef, where("user", "==", user));
     const snap = await getDocs(q);
 
-    return snap.docs.map((doc) => doc.data()) as ToOrderListsItem[];
+    return snap.docs.map((doc) => doc.data()) as UserGeneratedList[];
   } catch (e) {
     console.error("Error getting documents: ", e);
     return [];
   }
 };
 
-export const addToOrderList = async (
+export const addUserGeneratedList = async (
   user: string,
-  toOrderList: ToOrderListSimple
+  generatedList: GeneratedList
 ) => {
+  const newDocData = {
+    user,
+    datetime: new Date().toISOString(),
+    generatedList,
+  };
+
   try {
-    const docRef = await addDoc(collection(db, "toOrderLists"), {
-      user,
-      datetime: new Date().toISOString(),
-      toOrderList,
-    });
+    const docRef = await addDoc(
+      collection(db, GENERATED_LISTS_COLLECTION_NAME),
+      newDocData
+    );
     console.log("Document written with ID: ", docRef.id);
   } catch (e) {
     console.error("Error adding document: ", e);
   }
-};
 
-const getToOrderListsLocal = (user: string) => {
-  return JSON.parse(localStorage.getItem(user) || "[]");
-};
-
-const addToOrderListLocal = (user: string, toOrderList: ToOrderListSimple) => {
-  const toOrderLists: ToOrderListsItem[] = JSON.parse(
-    localStorage.getItem(user) || "[]"
-  );
-
-  toOrderLists.push({
-    id: toOrderLists.length,
-    datetime: new Date().toISOString(),
-    toOrderList,
-  });
-
-  localStorage.setItem(user, JSON.stringify(toOrderLists));
+  return newDocData;
 };

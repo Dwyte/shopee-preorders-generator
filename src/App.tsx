@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from "react";
-import ToOrderListItem from "./components/ToOrderListItem";
-import { ToOrderListSimple } from "./scripts";
-import { ToOrderListsItem, addToOrderList, getToOrderLists } from "./api";
+import GeneratedListItem from "./components/GeneratedListItem";
+import { addUserGeneratedList, getUserGeneratedLists } from "./api";
 import ListGeneratorForm from "./components/ListGeneratorForm";
+import { GeneratedList, UserGeneratedList } from "./types";
 
 const USERS = ["CJ", "Shia", "Jenna", "Freya", "Xander"];
 
 const App = () => {
   const [currentUser, setUser] = useState<string>("");
-  const [toOrderLists, setToOrderLists] = useState<ToOrderListsItem[]>([]);
-  const [toOrderList, setToOrderList] = useState<ToOrderListSimple>({});
+  const [userGeneratedLists, setUserGeneratedLists] = useState<
+    UserGeneratedList[]
+  >([]);
+  const [currentGeneratedList, setCurrentGeneratedList] =
+    useState<GeneratedList>({});
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const userToOrderLists = await getToOrderLists(currentUser);
-      setToOrderLists(userToOrderLists);
+      const fetchedUserGeneratedLists = await getUserGeneratedLists(
+        currentUser
+      );
+
+      setUserGeneratedLists(fetchedUserGeneratedLists);
     };
     fetchUserData();
   }, [currentUser]);
@@ -26,16 +32,22 @@ const App = () => {
   };
 
   const handleListGeneratorFormSubmit = async (
-    generatedToOrderList: ToOrderListSimple
+    generatedList: GeneratedList
   ) => {
-    setToOrderList(generatedToOrderList);
-    await addToOrderList(currentUser, generatedToOrderList);
+    const newUserGeneratedList = await addUserGeneratedList(
+      currentUser,
+      generatedList
+    );
+    setUserGeneratedLists([...userGeneratedLists, newUserGeneratedList]);
+    setCurrentGeneratedList(generatedList);
   };
 
-  const handleToOrderListChange: React.ChangeEventHandler<HTMLSelectElement> = (
-    event
-  ) => {
-    setToOrderList(toOrderLists[parseInt(event.target.value)].toOrderList);
+  const handleSelectedListChange: React.ChangeEventHandler<
+    HTMLSelectElement
+  > = (event) => {
+    const userGeneratedList = userGeneratedLists[parseInt(event.target.value)];
+    console.log(userGeneratedList);
+    setCurrentGeneratedList(userGeneratedList.generatedList);
   };
 
   return (
@@ -58,22 +70,22 @@ const App = () => {
       </select>
       {currentUser && (
         <>
-          {toOrderLists.length ? (
+          {userGeneratedLists.length ? (
             <>
-              <label htmlFor="toOrderListSelection">
+              <label htmlFor="userGeneratedListsSelection">
                 {" "}
                 Previously Generated:{" "}
               </label>
               <select
-                name="toOrderListSelection"
-                id="toOrderListSelection"
-                onChange={handleToOrderListChange}
+                name="userGeneratedListsSelection"
+                id="userGeneratedListsSelection"
+                onChange={handleSelectedListChange}
               >
                 <option value="" disabled selected>
                   -----
                 </option>
-                {toOrderLists.map((toOrderList) => (
-                  <option value={toOrderList.id}>{toOrderList.datetime}</option>
+                {userGeneratedLists.map((generatedList, index) => (
+                  <option value={index}>{generatedList.datetime}</option>
                 ))}
               </select>
             </>
@@ -83,11 +95,11 @@ const App = () => {
           <ListGeneratorForm handleSubmit={handleListGeneratorFormSubmit} />
         </>
       )}
-      {Object.keys(toOrderList).map((supplierCode, index) => (
-        <ToOrderListItem
+      {Object.keys(currentGeneratedList).map((supplierCode, index) => (
+        <GeneratedListItem
           key={index}
           supplierCode={supplierCode}
-          productsToOrderText={toOrderList[supplierCode]}
+          productsToOrderText={currentGeneratedList[supplierCode]}
         />
       ))}
     </div>
