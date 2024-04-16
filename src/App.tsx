@@ -48,7 +48,7 @@ const App = () => {
 
   const handleSelectedListChange = (event: SelectChangeEvent<string>) => {
     const userGeneratedList = userGeneratedLists.find(
-      (v) => v.datetime === event.target.value
+      (v) => v.datetime === parseInt(event.target.value)
     );
 
     if (userGeneratedList) {

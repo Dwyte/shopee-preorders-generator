@@ -10,6 +10,6 @@ export interface GeneratedList {
 
 export interface UserGeneratedList {
   user: string;
-  datetime: string;
+  datetime: number;
   generatedList: GeneratedList;
 }

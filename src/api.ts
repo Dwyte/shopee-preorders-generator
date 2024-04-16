@@ -7,6 +7,7 @@ import {
   getDocs,
   query,
   where,
+  orderBy,
 } from "firebase/firestore";
 import { GeneratedList, UserGeneratedList } from "./types";
 
@@ -38,7 +39,7 @@ export const addUserGeneratedListLocal = (
 
   const newUserGeneratedList = {
     user,
-    datetime: new Date().toISOString(),
+    datetime: Date.now(),
     generatedList,
   };
 
@@ -50,8 +51,13 @@ export const addUserGeneratedListLocal = (
 export const getUserGeneratedLists = async (user: string) => {
   try {
     const docRef = collection(db, GENERATED_LISTS_COLLECTION_NAME);
-    const q = query(docRef, where("user", "==", user));
+    const q = query(
+      docRef,
+      where("user", "==", user),
+      orderBy("datetime", "desc")
+    );
     const snap = await getDocs(q);
+    console.log("lol", snap);
 
     return snap.docs.map((doc) => doc.data()) as UserGeneratedList[];
   } catch (e) {
@@ -66,7 +72,7 @@ export const addUserGeneratedList = async (
 ) => {
   const newDocData = {
     user,
-    datetime: new Date().toISOString(),
+    datetime: Date.now(),
     generatedList,
   };
 

@@ -25,11 +25,11 @@ const GeneratedListsHistory = (props: PropType) => {
         id="demo-simple-select"
         label={label}
         onChange={props.handleSelectedListChange}
-        value={props.currentUserGeneratedList?.datetime || ""}
+        value={props.currentUserGeneratedList?.datetime.toString() || ""}
       >
         {props.userGeneratedLists.map((generatedList, index) => (
           <MenuItem key={index} value={generatedList.datetime}>
-            {generatedList.datetime}
+            {new Date(generatedList.datetime).toLocaleString()}
           </MenuItem>
         ))}
       </Select>
