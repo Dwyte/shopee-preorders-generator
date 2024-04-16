@@ -13,7 +13,7 @@ interface PropType {
 }
 
 const GeneratedListsHistory = (props: PropType) => {
-  const label = "History";
+  const label = "Select Date";
 
   return (
     <FormControl fullWidth size="small" sx={{ my: 1 }}>

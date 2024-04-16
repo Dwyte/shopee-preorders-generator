@@ -14,8 +14,10 @@ const hiddenInputStyle: React.CSSProperties = {
 };
 
 const ListGeneratorForm = ({
+  resetCurrentGeneratedList,
   handleSubmit,
 }: {
+  resetCurrentGeneratedList: () => void;
   handleSubmit: (a: GeneratedList) => void;
 }) => {
   const [daysToShipFile, setDaysToShipFile] = useState<File | null>(null);
@@ -36,6 +38,7 @@ const ListGeneratorForm = ({
   const handleReset = () => {
     setDaysToShipFile(null);
     setBigSellerOrdersFile(null);
+    resetCurrentGeneratedList();
   };
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = async (event) => {
