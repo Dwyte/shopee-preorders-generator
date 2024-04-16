@@ -74,9 +74,15 @@ interface Props {
 
 const GeneratedListItem = ({ supplierCode, productsToOrderText }: Props) => {
   const [textAreaValue, setTextAreValue] = useState(productsToOrderText);
+  const [copyState, setCopyState] = useState(false);
 
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(productsToOrderText);
+    setCopyState(true);
+
+    setTimeout(() => {
+      setCopyState(false);
+    }, 1000);
   };
 
   return (
@@ -95,8 +101,10 @@ const GeneratedListItem = ({ supplierCode, productsToOrderText }: Props) => {
           sx={{ mt: 1 }}
           onClick={handleCopyToClipboard}
           startIcon={<ContentCopyIcon />}
+          color={copyState ? "success" : "primary"}
+          variant={copyState ? "contained" : "outlined"}
         >
-          Copy to Clipboard
+          {copyState ? "Copied!" : "Copy to Clipboard"}
         </Button>
       </Box>
     </Card>
