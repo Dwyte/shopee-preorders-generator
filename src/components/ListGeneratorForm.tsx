@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { generateListFromFiles } from "../scripts";
 import { GeneratedList } from "../types";
-import {
-  FormControl,
-  Button,
-  Typography,
-  Stack,
-  Link,
-  colors,
-} from "@mui/material";
+import { FormControl, Button, Typography, Stack } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SendSharpIcon from "@mui/icons-material/SendSharp";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import GeneratedListItem from "./components/GeneratedListItem";
 import { addUserGeneratedList, getUserGeneratedLists } from "./api";
 import ListGeneratorForm from "./components/ListGeneratorForm";
 import { GeneratedList, UserGeneratedList } from "./types";
 import { Container, SelectChangeEvent } from "@mui/material";
 import UserAuthForm from "./components/UserAuthForm";
+import GeneratedListsHistory from "./components/GeneratedListsHistory";
 
 const App = () => {
   const [currentUser, setUser] = useState<string>("");
@@ -40,9 +41,7 @@ const App = () => {
     setCurrentGeneratedList(generatedList);
   };
 
-  const handleSelectedListChange: React.ChangeEventHandler<
-    HTMLSelectElement
-  > = (event) => {
+  const handleSelectedListChange = (event: SelectChangeEvent<string>) => {
     const userGeneratedList = userGeneratedLists[parseInt(event.target.value)];
     console.log(userGeneratedList);
     setCurrentGeneratedList(userGeneratedList.generatedList);
@@ -56,31 +55,14 @@ const App = () => {
       />
 
       {currentUser && (
-        <>
-          {userGeneratedLists.length ? (
-            <>
-              <label htmlFor="userGeneratedListsSelection">
-                {" "}
-                Previously Generated:{" "}
-              </label>
-              <select
-                name="userGeneratedListsSelection"
-                id="userGeneratedListsSelection"
-                onChange={handleSelectedListChange}
-              >
-                <option value="" disabled selected>
-                  -----
-                </option>
-                {userGeneratedLists.map((generatedList, index) => (
-                  <option value={index}>{generatedList.datetime}</option>
-                ))}
-              </select>
-            </>
-          ) : (
-            "(Generate your first List)"
-          )}
-          <ListGeneratorForm handleSubmit={handleListGeneratorFormSubmit} />
-        </>
+        <GeneratedListsHistory
+          userGeneratedLists={userGeneratedLists}
+          handleSelectedListChange={handleSelectedListChange}
+        />
+      )}
+
+      {currentUser && (
+        <ListGeneratorForm handleSubmit={handleListGeneratorFormSubmit} />
       )}
       {Object.keys(currentGeneratedList).map((supplierCode, index) => (
         <GeneratedListItem

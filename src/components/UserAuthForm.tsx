@@ -15,7 +15,7 @@ const UserAuthForm = (props: {
   const label = props.currentUser ? "Change User" : "Select User";
 
   return (
-    <FormControl fullWidth>
+    <FormControl size="small" fullWidth sx={{ my: 1 }}>
       <InputLabel id="demo-simple-select-label">{label}</InputLabel>
       <Select
         labelId="demo-simple-select-label"
