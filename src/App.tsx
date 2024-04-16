@@ -1,4 +1,4 @@
-import { Box, Container, SelectChangeEvent } from "@mui/material";
+import { Box, Container, Divider, SelectChangeEvent } from "@mui/material";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -82,9 +82,7 @@ const App = () => {
           handleUserChange={handleUserChange}
         />
 
-        {currentUser && (
-          <NavBarTabs resetCurrentGeneratedList={resetCurrentGeneratedList} />
-        )}
+        {currentUser && <NavBarTabs />}
 
         {currentUser && (
           <Box sx={{ my: 1 }}>
@@ -101,23 +99,29 @@ const App = () => {
               <Route
                 path="/history"
                 element={
-                  <GeneratedListsHistory
-                    currentUserGeneratedList={currentUserGeneratedList}
-                    userGeneratedLists={userGeneratedLists}
-                    handleSelectedListChange={handleSelectedListChange}
-                  />
+                  <>
+                    <GeneratedListsHistory
+                      currentUserGeneratedList={currentUserGeneratedList}
+                      userGeneratedLists={userGeneratedLists}
+                      handleSelectedListChange={handleSelectedListChange}
+                    />
+
+                    <Divider sx={{ mb: 1 }} />
+
+                    {currentUserGeneratedList && (
+                      <UserGeneratedListSection
+                        currentUserGeneratedList={currentUserGeneratedList}
+                        handleDeleteUserGeneratedList={
+                          handleDeleteUserGeneratedList
+                        }
+                      />
+                    )}
+                  </>
                 }
               />
               <Route path="*" element={<Navigate to="/newList" replace />} />
             </Routes>
           </Box>
-        )}
-
-        {currentUserGeneratedList && (
-          <UserGeneratedListSection
-            currentUserGeneratedList={currentUserGeneratedList}
-            handleDeleteUserGeneratedList={handleDeleteUserGeneratedList}
-          />
         )}
       </Container>
     </BrowserRouter>
