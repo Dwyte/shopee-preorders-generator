@@ -5,6 +5,7 @@ import { FormControl, Button, Typography, Stack } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SendSharpIcon from "@mui/icons-material/SendSharp";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { useNavigate } from "react-router-dom";
 
 const hiddenInputStyle: React.CSSProperties = {
   position: "absolute",
@@ -24,6 +25,8 @@ const ListGeneratorForm = ({
   const [bigSellerOrdersFile, setBigSellerOrdersFile] = useState<File | null>(
     null
   );
+
+  const navigate = useNavigate();
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -51,6 +54,7 @@ const ListGeneratorForm = ({
       );
 
       handleSubmit(generatedList);
+      navigate("/history");
     }
   };
 

@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
-import GeneratedListItem from "./components/GeneratedListItem";
-import { addUserGeneratedList, getUserGeneratedLists } from "./api";
-import ListGeneratorForm from "./components/ListGeneratorForm";
-import { GeneratedList, UserGeneratedList } from "./types";
 import { Box, Container, SelectChangeEvent } from "@mui/material";
-import UserAuthForm from "./components/UserAuthForm";
-import GeneratedListsHistory from "./components/GeneratedListsHistory";
-import NavBarTabs from "./components/NavBarTabs";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+import GeneratedListsHistory from "./components/GeneratedListsHistory";
+import GeneratedListItem from "./components/GeneratedListItem";
+import ListGeneratorForm from "./components/ListGeneratorForm";
+import UserAuthForm from "./components/UserAuthForm";
+import NavBarTabs from "./components/NavBarTabs";
+
+import { addUserGeneratedList, getUserGeneratedLists } from "./api";
+import { GeneratedList, UserGeneratedList } from "./types";
 
 const App = () => {
   const [currentUser, setUser] = useState<string>("");
@@ -42,7 +44,7 @@ const App = () => {
       currentUser,
       generatedList
     );
-    setUserGeneratedLists([...userGeneratedLists, newUserGeneratedList]);
+    setUserGeneratedLists([newUserGeneratedList, ...userGeneratedLists]);
     setCurrentGeneratedList(newUserGeneratedList);
   };
 
