@@ -1,6 +1,24 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { generateListFromFiles } from "../scripts";
 import { GeneratedList } from "../types";
+import {
+  FormControl,
+  Button,
+  Typography,
+  Stack,
+  Link,
+  colors,
+} from "@mui/material";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
+import SendSharpIcon from "@mui/icons-material/SendSharp";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+
+const hiddenInputStyle: React.CSSProperties = {
+  position: "absolute",
+  width: "100%",
+  height: "100%",
+  opacity: 0,
+};
 
 const ListGeneratorForm = ({
   handleSubmit,
@@ -22,6 +40,11 @@ const ListGeneratorForm = ({
     }
   };
 
+  const handleReset = () => {
+    setDaysToShipFile(null);
+    setBigSellerOrdersFile(null);
+  };
+
   const onSubmit: React.FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
 
@@ -37,25 +60,66 @@ const ListGeneratorForm = ({
 
   return (
     <form onSubmit={onSubmit}>
-      <br />
-      <label htmlFor="dtsFileInput">Days to Ship File</label> <br />
-      <input
-        id="dtsFileInput"
-        type="file"
-        onChange={(event) => handleFileChange(event, setDaysToShipFile)}
-      />
-      <br />
-      <br />
-      <label htmlFor="ordersFileInput">BigSeller Orders File</label> <br />
-      <input
-        id="ordersFileInput"
-        type="file"
-        onChange={(event) => handleFileChange(event, setBigSellerOrdersFile)}
-      />
-      <br />
-      <br />
-      <input type="submit" />
-      <br />
+      <FormControl fullWidth>
+        <Typography>DTS File from Shopee</Typography>
+
+        <Button
+          sx={{ my: 1, height: 64, border: "dashed 1px" }}
+          component="label"
+          variant="outlined"
+          startIcon={<FileUploadIcon />}
+          color={daysToShipFile ? "success" : "primary"}
+        >
+          {daysToShipFile?.name || "Upload Days-to-Ship file"}
+          <input
+            type="file"
+            accept=".xlsx"
+            style={hiddenInputStyle}
+            onChange={(event) => handleFileChange(event, setDaysToShipFile)}
+          />
+        </Button>
+
+        <Typography>New Orders File from BigSeller </Typography>
+
+        <Button
+          sx={{ my: 1, height: 64, border: "dashed 1px" }}
+          component="label"
+          variant="outlined"
+          startIcon={<FileUploadIcon />}
+          color={bigSellerOrdersFile ? "success" : "primary"}
+        >
+          {bigSellerOrdersFile?.name || "Upload Bigseller Orders file"}
+          <input
+            type="file"
+            accept=".xlsx"
+            style={hiddenInputStyle}
+            onChange={(event) =>
+              handleFileChange(event, setBigSellerOrdersFile)
+            }
+          />
+        </Button>
+      </FormControl>
+
+      <Stack direction="row-reverse" spacing={1}>
+        <Button
+          variant="contained"
+          type="submit"
+          endIcon={<SendSharpIcon />}
+          color="success"
+          disabled={!(daysToShipFile && bigSellerOrdersFile)}
+        >
+          Generate
+        </Button>
+        <Button
+          variant="outlined"
+          endIcon={<RestartAltIcon />}
+          color="error"
+          disabled={!(daysToShipFile || bigSellerOrdersFile)}
+          onClick={handleReset}
+        >
+          Reset
+        </Button>
+      </Stack>
     </form>
   );
 };
