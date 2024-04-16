@@ -3,8 +3,8 @@ import GeneratedListItem from "./components/GeneratedListItem";
 import { addUserGeneratedList, getUserGeneratedLists } from "./api";
 import ListGeneratorForm from "./components/ListGeneratorForm";
 import { GeneratedList, UserGeneratedList } from "./types";
-
-const USERS = ["CJ", "Shia", "Jenna", "Freya", "Xander"];
+import { Container, SelectChangeEvent } from "@mui/material";
+import UserAuthForm from "./components/UserAuthForm";
 
 const App = () => {
   const [currentUser, setUser] = useState<string>("");
@@ -25,9 +25,7 @@ const App = () => {
     fetchUserData();
   }, [currentUser]);
 
-  const handleUserChange: React.ChangeEventHandler<HTMLSelectElement> = (
-    event
-  ) => {
+  const handleUserChange = (event: SelectChangeEvent<string>) => {
     setUser(event.target.value);
   };
 
@@ -51,23 +49,12 @@ const App = () => {
   };
 
   return (
-    <div>
-      <label htmlFor="usersSelection">
-        {currentUser ? "Change User:" : "Please Select User:"}{" "}
-      </label>{" "}
-      <select
-        name="usersSelection"
-        id="usersSelection"
-        onChange={handleUserChange}
-        value={currentUser}
-      >
-        <option value="" disabled selected>
-          -----
-        </option>
-        {USERS.map((user) => (
-          <option value={user}>{user}</option>
-        ))}
-      </select>
+    <Container>
+      <UserAuthForm
+        currentUser={currentUser}
+        handleUserChange={handleUserChange}
+      />
+
       {currentUser && (
         <>
           {userGeneratedLists.length ? (
@@ -102,7 +89,7 @@ const App = () => {
           productsToOrderText={currentGeneratedList[supplierCode]}
         />
       ))}
-    </div>
+    </Container>
   );
 };
 
