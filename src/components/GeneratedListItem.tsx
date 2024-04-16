@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { styled } from "@mui/system";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const blue = {
   100: "#DAECFF",
@@ -73,8 +73,12 @@ interface Props {
 }
 
 const GeneratedListItem = ({ supplierCode, productsToOrderText }: Props) => {
-  const [textAreaValue, setTextAreValue] = useState(productsToOrderText);
+  const [textAreaValue, setTextAreaValue] = useState(productsToOrderText);
   const [copyState, setCopyState] = useState(false);
+
+  useEffect(() => {
+    setTextAreaValue(productsToOrderText);
+  }, [productsToOrderText]);
 
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(productsToOrderText);
@@ -95,7 +99,7 @@ const GeneratedListItem = ({ supplierCode, productsToOrderText }: Props) => {
         <TextareaAutosize
           style={{ width: "100%" }}
           value={textAreaValue}
-          onChange={(event) => setTextAreValue(event.target.value)}
+          onChange={(event) => setTextAreaValue(event.target.value)}
         />
         <Button
           sx={{ mt: 1 }}

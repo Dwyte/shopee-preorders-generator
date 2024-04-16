@@ -11,11 +11,13 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 const App = () => {
   const [currentUser, setUser] = useState<string>("");
+
   const [userGeneratedLists, setUserGeneratedLists] = useState<
     UserGeneratedList[]
   >([]);
-  const [currentGeneratedList, setCurrentGeneratedList] =
-    useState<GeneratedList | null>(null);
+
+  const [currentUserGeneratedList, setCurrentGeneratedList] =
+    useState<UserGeneratedList | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -41,13 +43,17 @@ const App = () => {
       generatedList
     );
     setUserGeneratedLists([...userGeneratedLists, newUserGeneratedList]);
-    setCurrentGeneratedList(generatedList);
+    setCurrentGeneratedList(newUserGeneratedList);
   };
 
   const handleSelectedListChange = (event: SelectChangeEvent<string>) => {
-    const userGeneratedList = userGeneratedLists[parseInt(event.target.value)];
-    console.log(userGeneratedList);
-    setCurrentGeneratedList(userGeneratedList.generatedList);
+    const userGeneratedList = userGeneratedLists.find(
+      (v) => v.datetime === event.target.value
+    );
+
+    if (userGeneratedList) {
+      setCurrentGeneratedList(userGeneratedList);
+    }
   };
 
   const resetCurrentGeneratedList = () => {
@@ -82,6 +88,7 @@ const App = () => {
                 path="/history"
                 element={
                   <GeneratedListsHistory
+                    currentUserGeneratedList={currentUserGeneratedList}
                     userGeneratedLists={userGeneratedLists}
                     handleSelectedListChange={handleSelectedListChange}
                   />
@@ -92,14 +99,18 @@ const App = () => {
           </Box>
         )}
 
-        {currentGeneratedList &&
-          Object.keys(currentGeneratedList).map((supplierCode, index) => (
-            <GeneratedListItem
-              key={index}
-              supplierCode={supplierCode}
-              productsToOrderText={currentGeneratedList[supplierCode]}
-            />
-          ))}
+        {currentUserGeneratedList &&
+          Object.keys(currentUserGeneratedList.generatedList).map(
+            (supplierCode, index) => (
+              <GeneratedListItem
+                key={index}
+                supplierCode={supplierCode}
+                productsToOrderText={
+                  currentUserGeneratedList.generatedList[supplierCode]
+                }
+              />
+            )
+          )}
       </Container>
     </BrowserRouter>
   );

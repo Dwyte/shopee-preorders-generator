@@ -24,8 +24,10 @@ const UserAuthForm = (props: {
         label={label}
         onChange={props.handleUserChange}
       >
-        {USERS.map((user) => (
-          <MenuItem value={user}>{user}</MenuItem>
+        {USERS.map((user, index) => (
+          <MenuItem key={index} value={user}>
+            {user}
+          </MenuItem>
         ))}
       </Select>
     </FormControl>

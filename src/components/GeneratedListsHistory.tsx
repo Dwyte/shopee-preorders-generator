@@ -9,11 +9,13 @@ import { UserGeneratedList } from "../types";
 
 interface PropType {
   userGeneratedLists: UserGeneratedList[];
+  currentUserGeneratedList: UserGeneratedList | null;
   handleSelectedListChange: (event: SelectChangeEvent<string>) => void;
 }
 
 const GeneratedListsHistory = (props: PropType) => {
   const label = "Select Date";
+  console.log(props.currentUserGeneratedList);
 
   return (
     <FormControl fullWidth size="small" sx={{ my: 1 }}>
@@ -23,9 +25,12 @@ const GeneratedListsHistory = (props: PropType) => {
         id="demo-simple-select"
         label={label}
         onChange={props.handleSelectedListChange}
+        value={props.currentUserGeneratedList?.datetime || ""}
       >
         {props.userGeneratedLists.map((generatedList, index) => (
-          <MenuItem value={index}>{generatedList.datetime}</MenuItem>
+          <MenuItem key={index} value={generatedList.datetime}>
+            {generatedList.datetime}
+          </MenuItem>
         ))}
       </Select>
     </FormControl>
