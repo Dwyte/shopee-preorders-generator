@@ -6,16 +6,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { UserGeneratedList } from "../types";
-
-const daysOfWeek = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
+import { timestampToDatetimeText } from "../scripts";
 
 interface PropType {
   userGeneratedLists: UserGeneratedList[];
@@ -39,8 +30,7 @@ const GeneratedListsHistory = (props: PropType) => {
       >
         {props.userGeneratedLists.map((generatedList, index) => (
           <MenuItem key={index} value={generatedList.datetime}>
-            {new Date(generatedList.datetime).toLocaleString()} (
-            {daysOfWeek[new Date(generatedList.datetime).getDay()]})
+            {timestampToDatetimeText(generatedList.datetime)}
           </MenuItem>
         ))}
       </Select>

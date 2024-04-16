@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { styled } from "@mui/system";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const blue = {
   100: "#DAECFF",
@@ -70,15 +70,15 @@ const TextareaAutosize = styled(BaseTextareAutosize)(
 interface Props {
   supplierCode: string;
   productsToOrderText: string;
+  onProductsToOrderTextChange: (supplierCode: string, newValue: string) => void;
 }
 
-const GeneratedListItem = ({ supplierCode, productsToOrderText }: Props) => {
-  const [textAreaValue, setTextAreaValue] = useState(productsToOrderText);
+const UserGeneratedListItem = ({
+  supplierCode,
+  productsToOrderText,
+  onProductsToOrderTextChange,
+}: Props) => {
   const [copyState, setCopyState] = useState(false);
-
-  useEffect(() => {
-    setTextAreaValue(productsToOrderText);
-  }, [productsToOrderText]);
 
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(productsToOrderText);
@@ -87,6 +87,12 @@ const GeneratedListItem = ({ supplierCode, productsToOrderText }: Props) => {
     setTimeout(() => {
       setCopyState(false);
     }, 1000);
+  };
+
+  const handleTextAreChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
+    event
+  ) => {
+    onProductsToOrderTextChange(supplierCode, event.target.value);
   };
 
   return (
@@ -98,8 +104,8 @@ const GeneratedListItem = ({ supplierCode, productsToOrderText }: Props) => {
       <Box sx={{ p: 2 }}>
         <TextareaAutosize
           style={{ width: "100%" }}
-          value={textAreaValue}
-          onChange={(event) => setTextAreaValue(event.target.value)}
+          value={productsToOrderText}
+          onChange={handleTextAreChange}
         />
         <Button
           sx={{ mt: 1 }}
@@ -115,4 +121,4 @@ const GeneratedListItem = ({ supplierCode, productsToOrderText }: Props) => {
   );
 };
 
-export default GeneratedListItem;
+export default UserGeneratedListItem;

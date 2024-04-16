@@ -8,6 +8,9 @@ import {
   query,
   where,
   orderBy,
+  updateDoc,
+  deleteDoc,
+  doc,
 } from "firebase/firestore";
 import { GeneratedList, UserGeneratedList } from "./types";
 
@@ -26,28 +29,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const GENERATED_LISTS_COLLECTION_NAME = "generatedLists";
 
-export const getUserGeneratedListsLocal = (user: string) => {
-  return JSON.parse(localStorage.getItem(user) || "[]");
-};
-
-export const addUserGeneratedListLocal = (
-  user: string,
-  generatedList: GeneratedList
-) => {
-  const userGeneratedLists: UserGeneratedList[] =
-    getUserGeneratedListsLocal(user);
-
-  const newUserGeneratedList = {
-    user,
-    datetime: Date.now(),
-    generatedList,
-  };
-
-  userGeneratedLists.push(newUserGeneratedList);
-  localStorage.setItem(user, JSON.stringify(userGeneratedLists));
-  return newUserGeneratedList;
-};
-
 export const getUserGeneratedLists = async (user: string) => {
   try {
     const docRef = collection(db, GENERATED_LISTS_COLLECTION_NAME);
@@ -56,10 +37,13 @@ export const getUserGeneratedLists = async (user: string) => {
       where("user", "==", user),
       orderBy("datetime", "desc")
     );
-    const snap = await getDocs(q);
-    console.log("lol", snap);
+    const snapshots = await getDocs(q);
+    const snapshotsData = snapshots.docs.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    })) as UserGeneratedList[];
 
-    return snap.docs.map((doc) => doc.data()) as UserGeneratedList[];
+    return snapshotsData;
   } catch (e) {
     console.error("Error getting documents: ", e);
     return [];
@@ -71,6 +55,7 @@ export const addUserGeneratedList = async (
   generatedList: GeneratedList
 ) => {
   const newDocData = {
+    id: "",
     user,
     datetime: Date.now(),
     generatedList,
@@ -81,10 +66,30 @@ export const addUserGeneratedList = async (
       collection(db, GENERATED_LISTS_COLLECTION_NAME),
       newDocData
     );
+
+    newDocData.id = docRef.id;
     console.log("Document written with ID: ", docRef.id);
   } catch (e) {
     console.error("Error adding document: ", e);
   }
 
   return newDocData;
+};
+
+export const updateUserGeneratedList = async (
+  docId: string,
+  newUserGeneratedListDocData: {}
+) => {
+  const docRef = doc(db, GENERATED_LISTS_COLLECTION_NAME, docId);
+  await updateDoc(docRef, {
+    ...newUserGeneratedListDocData,
+    updateTime: Date.now(),
+  });
+  console.log("Updated doc", docId);
+};
+
+export const deleteUserGeneratedList = async (docId: string) => {
+  const docRef = doc(db, GENERATED_LISTS_COLLECTION_NAME, docId);
+  await deleteDoc(docRef);
+  console.log("Deleted doc", docId);
 };

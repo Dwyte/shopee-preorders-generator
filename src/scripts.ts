@@ -2,6 +2,16 @@
 import * as XLSX from "xlsx";
 import { GeneratedListMap, GeneratedList } from "./types";
 
+const daysOfWeek = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 const simplifyGeneratedList = (generatedListMap: GeneratedListMap) => {
   const simplifiedGeneratedList: GeneratedList = {};
 
@@ -107,4 +117,9 @@ export const generateListFromFiles = async (
   }
 
   return simplifyGeneratedList(generatedListMap);
+};
+
+export const timestampToDatetimeText = (timestamp: number) => {
+  const date = new Date(timestamp);
+  return `${date.toLocaleString()} (${daysOfWeek[date.getDay()]})`;
 };

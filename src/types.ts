@@ -9,7 +9,9 @@ export interface GeneratedList {
 }
 
 export interface UserGeneratedList {
+  id: string;
   user: string;
   datetime: number;
   generatedList: GeneratedList;
+  updateTime?: number;
 }

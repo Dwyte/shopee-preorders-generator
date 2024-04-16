@@ -2,13 +2,17 @@ import { Box, Container, SelectChangeEvent } from "@mui/material";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+import UserGeneratedListSection from "./components/UserGeneratedListSection";
 import GeneratedListsHistory from "./components/GeneratedListsHistory";
-import GeneratedListItem from "./components/GeneratedListItem";
 import ListGeneratorForm from "./components/ListGeneratorForm";
 import UserAuthForm from "./components/UserAuthForm";
 import NavBarTabs from "./components/NavBarTabs";
 
-import { addUserGeneratedList, getUserGeneratedLists } from "./api";
+import {
+  addUserGeneratedList,
+  deleteUserGeneratedList,
+  getUserGeneratedLists,
+} from "./api";
 import { GeneratedList, UserGeneratedList } from "./types";
 
 const App = () => {
@@ -18,7 +22,7 @@ const App = () => {
     UserGeneratedList[]
   >([]);
 
-  const [currentUserGeneratedList, setCurrentGeneratedList] =
+  const [currentUserGeneratedList, setCurrentUserGeneratedList] =
     useState<UserGeneratedList | null>(null);
 
   useEffect(() => {
@@ -45,7 +49,7 @@ const App = () => {
       generatedList
     );
     setUserGeneratedLists([newUserGeneratedList, ...userGeneratedLists]);
-    setCurrentGeneratedList(newUserGeneratedList);
+    setCurrentUserGeneratedList(newUserGeneratedList);
   };
 
   const handleSelectedListChange = (event: SelectChangeEvent<string>) => {
@@ -54,12 +58,20 @@ const App = () => {
     );
 
     if (userGeneratedList) {
-      setCurrentGeneratedList(userGeneratedList);
+      setCurrentUserGeneratedList(userGeneratedList);
     }
   };
 
+  const handleDeleteUserGeneratedList = async (id: string) => {
+    await deleteUserGeneratedList(id);
+    setUserGeneratedLists((currUserGeneratedLists) =>
+      currUserGeneratedLists.filter((v) => v.id !== id)
+    );
+    resetCurrentGeneratedList();
+  };
+
   const resetCurrentGeneratedList = () => {
-    setCurrentGeneratedList(null);
+    setCurrentUserGeneratedList(null);
   };
 
   return (
@@ -101,18 +113,12 @@ const App = () => {
           </Box>
         )}
 
-        {currentUserGeneratedList &&
-          Object.keys(currentUserGeneratedList.generatedList).map(
-            (supplierCode, index) => (
-              <GeneratedListItem
-                key={index}
-                supplierCode={supplierCode}
-                productsToOrderText={
-                  currentUserGeneratedList.generatedList[supplierCode]
-                }
-              />
-            )
-          )}
+        {currentUserGeneratedList && (
+          <UserGeneratedListSection
+            currentUserGeneratedList={currentUserGeneratedList}
+            handleDeleteUserGeneratedList={handleDeleteUserGeneratedList}
+          />
+        )}
       </Container>
     </BrowserRouter>
   );
