@@ -3,7 +3,7 @@ import { UserGeneratedList } from "../types";
 import UserGeneratedListItem from "./UserGeneratedListItem";
 import { useEffect, useState } from "react";
 import { updateUserGeneratedList } from "../api";
-import { timestampToDatetimeText } from "../scripts";
+import { disectSupplierCode, timestampToDatetimeText } from "../scripts";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -16,7 +16,33 @@ const UserGeneratedListSection = (props: PropType) => {
   const [generatedListDraft, setGeneratedListDraft] = useState(
     props.currentUserGeneratedList.generatedList
   );
+
+  const [sortedGeneratedList, setSortedGeneratedList] = useState(
+    [] as string[]
+  );
+
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  useEffect(() => {
+    const sortedGeneratedList = Object.keys(
+      props.currentUserGeneratedList.generatedList
+    ).sort((a, b) => {
+      const ad = disectSupplierCode(a);
+      const bd = disectSupplierCode(b);
+
+      // First, sort by color
+      if (ad.color < bd.color) return -1;
+      if (ad.color > bd.color) return 1;
+
+      // If colors are the same, sort by name
+      if (ad.name < bd.name) return -1;
+      if (ad.name > bd.name) return 1;
+
+      return 0; // If colors and names are equal
+    });
+
+    setSortedGeneratedList(sortedGeneratedList);
+  }, [props.currentUserGeneratedList]);
 
   useEffect(() => {
     setGeneratedListDraft(props.currentUserGeneratedList.generatedList);
@@ -84,16 +110,14 @@ const UserGeneratedListSection = (props: PropType) => {
 
       <Divider sx={{ mb: 2 }} />
 
-      {Object.keys(props.currentUserGeneratedList.generatedList).map(
-        (supplierCode, index) => (
-          <UserGeneratedListItem
-            key={index}
-            supplierCode={supplierCode}
-            productsToOrderText={generatedListDraft[supplierCode]}
-            onProductsToOrderTextChange={handleProductsToOrderTextChange}
-          />
-        )
-      )}
+      {sortedGeneratedList.map((supplierCode, index) => (
+        <UserGeneratedListItem
+          key={index}
+          supplierCode={supplierCode}
+          productsToOrderText={generatedListDraft[supplierCode]}
+          onProductsToOrderTextChange={handleProductsToOrderTextChange}
+        />
+      ))}
     </Box>
   );
 };
