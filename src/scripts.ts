@@ -99,7 +99,7 @@ export const generateListFromFiles = async (
     const row = bigSellerOrdersRows[rowIndex];
 
     const productName: string = row[0];
-    const sku: string = row[1];
+    // const sku: string = row[1];
     const variationName: string = row[2];
     const quantity: number = parseInt(row[3]);
 

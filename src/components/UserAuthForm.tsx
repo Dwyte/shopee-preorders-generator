@@ -12,7 +12,9 @@ const UserAuthForm = (props: {
   currentUser: string;
   handleUserChange: (event: SelectChangeEvent<string>) => void;
 }) => {
-  const label = props.currentUser ? "Change User" : "Select User";
+  const label = props.currentUser
+    ? "Change User/Shop Owner"
+    : "Select User/Shop Owner";
 
   return (
     <FormControl size="small" fullWidth sx={{ my: 1 }}>
