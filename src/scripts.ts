@@ -35,7 +35,7 @@ const simplifyGeneratedList = (generatedListMap: GeneratedListMap) => {
 
 export const generateListFromFiles = async (
   daysToShipFiles: File[],
-  bigSellerOrdersFile: File
+  bigSellerOrdersFiles: File[]
 ): Promise<GeneratedList> => {
   const preOrderProducts: { [key: string]: any } = {};
 
@@ -71,52 +71,54 @@ export const generateListFromFiles = async (
     }
   }
 
-  const bigSellerOrdersWorkbook = XLSX.read(
-    await bigSellerOrdersFile?.arrayBuffer()
-  );
-
-  const bigSellerOrdersSheetName = bigSellerOrdersWorkbook.SheetNames[0];
-  const bigSellerOrdersWorkSheet =
-    bigSellerOrdersWorkbook.Sheets[bigSellerOrdersSheetName];
-
-  const bigSellerOrdersRows = XLSX.utils.sheet_to_json(
-    bigSellerOrdersWorkSheet,
-    {
-      header: 1,
-    }
-  );
-
-  const startingRow = 2;
-  // This (generatedListMap) will be a mapping of the products needed to be ordered.
-  // Mapping generatedListMap -> SupplierCode/ParentSKU -> Product Name -> Variation -> Quantity
   const generatedListMap: GeneratedListMap = {};
+  for (let bigSellerOrdersFile of bigSellerOrdersFiles) {
+    const bigSellerOrdersWorkbook = XLSX.read(
+      await bigSellerOrdersFile?.arrayBuffer()
+    );
 
-  for (
-    let rowIndex = startingRow - 1;
-    rowIndex < bigSellerOrdersRows.length;
-    rowIndex++
-  ) {
-    const row = bigSellerOrdersRows[rowIndex];
+    const bigSellerOrdersSheetName = bigSellerOrdersWorkbook.SheetNames[0];
+    const bigSellerOrdersWorkSheet =
+      bigSellerOrdersWorkbook.Sheets[bigSellerOrdersSheetName];
 
-    const productName: string = row[0];
-    // const sku: string = row[1];
-    const variationName: string = row[2];
-    const quantity: number = parseInt(row[3]);
+    const bigSellerOrdersRows = XLSX.utils.sheet_to_json(
+      bigSellerOrdersWorkSheet,
+      {
+        header: 1,
+      }
+    );
 
-    if (productName in preOrderProducts) {
-      const supplierCode: string = preOrderProducts[productName];
+    const startingRow = 2;
+    // This (generatedListMap) will be a mapping of the products needed to be ordered.
+    // Mapping generatedListMap -> SupplierCode/ParentSKU -> Product Name -> Variation -> Quantity
 
-      // Set default to empty object
-      generatedListMap[supplierCode] ??= {};
+    for (
+      let rowIndex = startingRow - 1;
+      rowIndex < bigSellerOrdersRows.length;
+      rowIndex++
+    ) {
+      const row = bigSellerOrdersRows[rowIndex];
 
-      // Set default to empty object
-      generatedListMap[supplierCode][productName] ??= {};
+      const productName: string = row[0];
+      // const sku: string = row[1];
+      const variationName: string = row[2];
+      const quantity: number = parseInt(row[3]);
 
-      // Set default to 0
-      generatedListMap[supplierCode][productName][variationName] ??= 0;
+      if (productName in preOrderProducts) {
+        const supplierCode: string = preOrderProducts[productName];
 
-      // Increase the quantity we need to order for this product
-      generatedListMap[supplierCode][productName][variationName] += quantity;
+        // Set default to empty object
+        generatedListMap[supplierCode] ??= {};
+
+        // Set default to empty object
+        generatedListMap[supplierCode][productName] ??= {};
+
+        // Set default to 0
+        generatedListMap[supplierCode][productName][variationName] ??= 0;
+
+        // Increase the quantity we need to order for this product
+        generatedListMap[supplierCode][productName][variationName] += quantity;
+      }
     }
   }
 

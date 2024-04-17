@@ -92,7 +92,6 @@ const App = () => {
                 element={
                   <ListGeneratorForm
                     handleSubmit={handleListGeneratorFormSubmit}
-                    resetCurrentGeneratedList={resetCurrentGeneratedList}
                   />
                 }
               />
