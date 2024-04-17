@@ -1,11 +1,19 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { generateListFromFiles } from "../scripts";
 import { GeneratedList } from "../types";
-import { FormControl, Button, Typography, Stack } from "@mui/material";
+import {
+  FormControl,
+  Button,
+  Typography,
+  Stack,
+  Tooltip,
+  IconButton,
+} from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SendSharpIcon from "@mui/icons-material/SendSharp";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useNavigate } from "react-router-dom";
+import InfoIcon from "@mui/icons-material/Info";
 
 const hiddenInputStyle: React.CSSProperties = {
   position: "absolute",
@@ -21,23 +29,12 @@ const ListGeneratorForm = ({
   resetCurrentGeneratedList: () => void;
   handleSubmit: (a: GeneratedList) => void;
 }) => {
-  const [daysToShipFile, setDaysToShipFile] = useState<File | null>(null);
-  const [bigSellerOrdersFile, setBigSellerOrdersFile] = useState<File | null>(
-    null
-  );
+  const [daysToShipFile, setDaysToShipFile] = useState<FileList | null>(null);
+  const [bigSellerOrdersFile, setBigSellerOrdersFile] =
+    useState<FileList | null>(null);
 
   const navigate = useNavigate();
-
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    setter: React.Dispatch<React.SetStateAction<File | null>>
-  ) => {
-    if (event.target.files) {
-      const file = event.target.files[0];
-      setter(file);
-    }
-  };
-
+  console.log(daysToShipFile);
   const handleReset = () => {
     setDaysToShipFile(null);
     setBigSellerOrdersFile(null);
@@ -49,8 +46,8 @@ const ListGeneratorForm = ({
 
     if (daysToShipFile !== null && bigSellerOrdersFile !== null) {
       const generatedList = await generateListFromFiles(
-        daysToShipFile,
-        bigSellerOrdersFile
+        Array.from(daysToShipFile),
+        bigSellerOrdersFile[0]
       );
 
       handleSubmit(generatedList);
@@ -58,44 +55,77 @@ const ListGeneratorForm = ({
     }
   };
 
+  const daysToShipFilesNamePreview = useMemo(() => {
+    if (!daysToShipFile) return "Drag & Drop DTS file(s) here or click";
+    const fileNames = Array.from(daysToShipFile).map(
+      (f) =>
+        f.name.substring(0, 3) + "..." + f.name.substring(f.name.length - 8)
+    );
+    return fileNames.join(", ") + ` (${daysToShipFile.length})`;
+  }, [daysToShipFile]);
+
   return (
     <form onSubmit={onSubmit}>
       <FormControl fullWidth>
-        <Typography>DTS File from Shopee</Typography>
+        <Typography sx={{ fontWeight: "bold" }}>
+          DTS File from Shopee
+          <Tooltip
+            title="Supports multiple files for multiple shops"
+            placement="right"
+          >
+            <IconButton>
+              <InfoIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Typography>
 
         <Button
-          sx={{ my: 1, height: 64, border: "dashed 1px" }}
+          sx={{
+            my: 1,
+            height: 128,
+            border: "dashed 1px",
+            fontSize: 16,
+          }}
           component="label"
           variant="outlined"
           startIcon={<FileUploadIcon />}
           color={daysToShipFile ? "success" : "primary"}
         >
-          {daysToShipFile?.name || "Upload Days-to-Ship file"}
+          {daysToShipFilesNamePreview}
           <input
             type="file"
             accept=".xlsx"
             style={hiddenInputStyle}
-            onChange={(event) => handleFileChange(event, setDaysToShipFile)}
+            onChange={(event) => setDaysToShipFile(event.target.files)}
+            multiple
+            required
           />
         </Button>
 
-        <Typography>New Orders File from BigSeller </Typography>
+        <Typography sx={{ fontWeight: "bold" }}>
+          New Orders File from BigSeller{" "}
+        </Typography>
 
         <Button
-          sx={{ my: 1, height: 64, border: "dashed 1px" }}
+          sx={{
+            my: 1,
+            height: 128,
+            border: "dashed 1px",
+            fontSize: 16,
+          }}
           component="label"
           variant="outlined"
           startIcon={<FileUploadIcon />}
           color={bigSellerOrdersFile ? "success" : "primary"}
         >
-          {bigSellerOrdersFile?.name || "Upload Bigseller Orders file"}
+          {bigSellerOrdersFile?.[0].name ||
+            "Drag & Drop Bigseller file here or click"}
           <input
             type="file"
             accept=".xlsx"
             style={hiddenInputStyle}
-            onChange={(event) =>
-              handleFileChange(event, setBigSellerOrdersFile)
-            }
+            onChange={(event) => setBigSellerOrdersFile(event.target.files)}
+            required
           />
         </Button>
       </FormControl>

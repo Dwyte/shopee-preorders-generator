@@ -34,36 +34,40 @@ const simplifyGeneratedList = (generatedListMap: GeneratedListMap) => {
 };
 
 export const generateListFromFiles = async (
-  daysToShipFile: File,
+  daysToShipFiles: File[],
   bigSellerOrdersFile: File
 ): Promise<GeneratedList> => {
-  const daysToShipWorkbook = XLSX.read(await daysToShipFile?.arrayBuffer());
-
-  // Assuming the first sheet is the one you want to read
-  const daysToShipSheetName = daysToShipWorkbook.SheetNames[0];
-  const daysToShipWorksheet = daysToShipWorkbook.Sheets[daysToShipSheetName];
-
-  // Convert Excel data to Array
-  const daysToShipRows = XLSX.utils.sheet_to_json(daysToShipWorksheet, {
-    header: 1,
-  });
-
-  // Run a loop for the rows
-  const daysToShipStartingRow: number = 7;
   const preOrderProducts: { [key: string]: any } = {};
-  for (
-    let rowIndex = daysToShipStartingRow - 1;
-    rowIndex < daysToShipRows.length;
-    rowIndex++
-  ) {
-    const row: string[] = daysToShipRows[rowIndex];
 
-    const productName: string = row[2];
-    const parentSKU: string = row[1];
-    const daysToShip: number = parseInt(row[6]);
+  for (let daysToShipFile of daysToShipFiles) {
+    const daysToShipWorkbook = XLSX.read(await daysToShipFile?.arrayBuffer());
 
-    if (daysToShip > 2) {
-      preOrderProducts[productName] = parentSKU;
+    // Assuming the first sheet is the one you want to read
+    const daysToShipSheetName = daysToShipWorkbook.SheetNames[0];
+    const daysToShipWorksheet = daysToShipWorkbook.Sheets[daysToShipSheetName];
+
+    // Convert Excel data to Array
+    const daysToShipRows = XLSX.utils.sheet_to_json(daysToShipWorksheet, {
+      header: 1,
+    });
+
+    // Run a loop for the rows
+    const daysToShipStartingRow: number = 7;
+
+    for (
+      let rowIndex = daysToShipStartingRow - 1;
+      rowIndex < daysToShipRows.length;
+      rowIndex++
+    ) {
+      const row: string[] = daysToShipRows[rowIndex];
+
+      const productName: string = row[2];
+      const parentSKU: string = row[1];
+      const daysToShip: number = parseInt(row[6]);
+
+      if (daysToShip > 2) {
+        preOrderProducts[productName] = parentSKU;
+      }
     }
   }
 
