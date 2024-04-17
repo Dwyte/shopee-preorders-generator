@@ -9,6 +9,7 @@ import {
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { styled } from "@mui/system";
 import { useState } from "react";
+import SupplierName from "./SupplierName";
 
 const blue = {
   100: "#DAECFF",
@@ -98,12 +99,14 @@ const UserGeneratedListItem = ({
   return (
     <Card sx={{ my: 1 }}>
       <Box sx={{ p: 2 }}>
-        <Typography component="h1">{supplierCode}</Typography>
+        <Typography component="h1">
+          <SupplierName supplierCode={supplierCode} />
+        </Typography>
       </Box>
       <Divider />
       <Box sx={{ p: 2 }}>
         <TextareaAutosize
-          style={{ width: "100%" }}
+          sx={{ width: "100%" }}
           value={productsToOrderText}
           onChange={handleTextAreChange}
         />

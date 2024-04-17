@@ -15,3 +15,12 @@ export interface UserGeneratedList {
   generatedList: GeneratedList;
   updateTime?: number;
 }
+
+export type MasuerteStallColor =
+  | "red"
+  | "blue"
+  | "yellow"
+  | "pink"
+  | "violet"
+  | "green"
+  | "pink";

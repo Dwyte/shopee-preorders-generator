@@ -1,6 +1,6 @@
 // XLSX is a global from the standalone script
 import * as XLSX from "xlsx";
-import { GeneratedListMap, GeneratedList } from "./types";
+import { GeneratedListMap, GeneratedList, MasuerteStallColor } from "./types";
 
 const daysOfWeek = [
   "Sunday",
@@ -122,4 +122,48 @@ export const generateListFromFiles = async (
 export const timestampToDatetimeText = (timestamp: number) => {
   const date = new Date(timestamp);
   return `${date.toLocaleString()} (${daysOfWeek[date.getDay()]})`;
+};
+
+export const extractColor = (str: string) => {
+  const regex = /\b(blue|pink|yellow|green|violet|red|orange)\b/i;
+  const match = str.match(regex);
+
+  if (!match) {
+    return "";
+  }
+
+  return match[0].toUpperCase();
+};
+
+export const extractNumbers = (str: string) => {
+  const regex = /\b(\d+(?:-\d+)?)\b/g;
+  const matches = str.match(regex);
+
+  if (!matches) {
+    return "";
+  }
+
+  return matches.join(",");
+};
+// Accepts a string, assuming the string holds info about the supplier
+// returns an object of stall name, color and number
+export const disectSupplierCode = (
+  supplierCode: string
+): { number: string; color: MasuerteStallColor; name: string } => {
+  const number = extractNumbers(supplierCode)?.toLowerCase();
+  const color = extractColor(supplierCode)?.toLowerCase() as MasuerteStallColor;
+  const name = supplierCode
+    .toLowerCase()
+    .replace("#", "")
+    .replace(number, "")
+    .replace(color, "")
+    .trim();
+
+  const result = {
+    number,
+    color,
+    name,
+  };
+
+  return result;
 };
