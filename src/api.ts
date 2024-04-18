@@ -1,6 +1,12 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import {
+  getStorage,
+  ref,
+  getDownloadURL,
+  uploadBytesResumable,
+} from "firebase/storage";
+import {
   getFirestore,
   collection,
   addDoc,
@@ -19,7 +25,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyD_WZT3BDrkfYqSGg4smPNLhWvVe_t31Js",
   authDomain: "shop-preorder-generator.firebaseapp.com",
   projectId: "shop-preorder-generator",
-  storageBucket: "shop-preorder-generator.appspot.com",
+  storageBucket: "gs://shop-preorder-generator.appspot.com",
   messagingSenderId: "782039057009",
   appId: "1:782039057009:web:c8b6e3985140f6e12a51d0",
 };
@@ -27,6 +33,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage();
 const GENERATED_LISTS_COLLECTION_NAME = "generatedLists";
 
 export const getUserGeneratedLists = async (user: string) => {
@@ -92,4 +99,22 @@ export const deleteUserGeneratedList = async (docId: string) => {
   const docRef = doc(db, GENERATED_LISTS_COLLECTION_NAME, docId);
   await deleteDoc(docRef);
   console.log("Deleted doc", docId);
+};
+
+export const uploadFile = async (file: File) => {
+  // Create Storage Reference
+  const storageRef = ref(storage, `files/${file.name}`);
+  const metadata = {
+    contentType: file.type,
+  };
+
+  const snapshot = await uploadBytesResumable(
+    storageRef,
+    await file.arrayBuffer(),
+    metadata
+  );
+
+  const downloadURL = await getDownloadURL(snapshot.ref);
+  console.log(downloadURL);
+  return downloadURL;
 };
