@@ -47,6 +47,17 @@ const ListGeneratorForm = ({
     // resetCurrentGeneratedList();
   };
 
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    setter: React.Dispatch<React.SetStateAction<File[] | null>>
+  ) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setter(Array.from(event.target.files));
+    } else {
+      setter(null);
+    }
+  };
+
   const onSubmit: React.FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
 
@@ -99,9 +110,7 @@ const ListGeneratorForm = ({
             type="file"
             accept=".xlsx"
             style={hiddenInputStyle}
-            onChange={(event) =>
-              setDaysToShipFile(Array.from(event.target.files || []))
-            }
+            onChange={(event) => handleFileChange(event, setDaysToShipFile)}
             multiple
             required
           />
@@ -134,7 +143,7 @@ const ListGeneratorForm = ({
             accept=".xlsx"
             style={hiddenInputStyle}
             onChange={(event) =>
-              setBigSellerOrdersFile(Array.from(event.target.files || []))
+              handleFileChange(event, setBigSellerOrdersFile)
             }
             required
             multiple
