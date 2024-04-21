@@ -5,7 +5,9 @@ import {
   ref,
   getDownloadURL,
   uploadBytesResumable,
+  deleteObject,
 } from "firebase/storage";
+``;
 import {
   getFirestore,
   collection,
@@ -35,6 +37,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage();
 const GENERATED_LISTS_COLLECTION_NAME = "generatedLists";
+const USER_SETTINGS_COLLECTION_NAME = "userSettings";
 
 export const getUserGeneratedLists = async (user: string) => {
   try {
@@ -101,9 +104,9 @@ export const deleteUserGeneratedList = async (docId: string) => {
   console.log("Deleted doc", docId);
 };
 
-export const uploadFile = async (file: File) => {
+export const uploadFile = async (file: File, directory: string) => {
   // Create Storage Reference
-  const storageRef = ref(storage, `files/${file.name}`);
+  const storageRef = ref(storage, `${directory}/${file.name}`);
   const metadata = {
     contentType: file.type,
   };
@@ -117,4 +120,41 @@ export const uploadFile = async (file: File) => {
   const downloadURL = await getDownloadURL(snapshot.ref);
   console.log(downloadURL);
   return downloadURL;
+};
+
+export const deleteFIle = async (directory: string) => {
+  const storageRef = ref(storage, directory);
+
+  await deleteObject(storageRef);
+  console.log("Delete Done!");
+};
+
+export const uploadUserDTSFiles = async (user: string, files: File[]) => {
+  // Upload new files, and store file directories
+  const newDTSFiles = [];
+  for (let file of files) {
+    await uploadFile(file, `${user}/dts-files`);
+    newDTSFiles.push(`${user}/dts-files`);
+  }
+
+  // Get Current User Settings
+  const userSettingsCollectionRef = collection(
+    db,
+    USER_SETTINGS_COLLECTION_NAME
+  );
+
+  const q = query(userSettingsCollectionRef, where("user", "==", user));
+  const userSettings = (await getDocs(q)).docs[0];
+
+  // Delete current DTS Files
+  for (let fileDir of userSettings.data().dtsFiles) {
+    const storageRef = ref(storage, fileDir);
+    await deleteObject(storageRef);
+  }
+
+  // Update user settings with new Dts files directories
+  const docRef = doc(db, GENERATED_LISTS_COLLECTION_NAME, userSettings.id);
+  await updateDoc(docRef, { dtsFiles: newDTSFiles });
+
+  console.log("Updated user settings", user);
 };
