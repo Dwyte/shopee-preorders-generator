@@ -9,6 +9,7 @@ import {
   Tooltip,
   IconButton,
   Skeleton,
+  Alert,
 } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SendSharpIcon from "@mui/icons-material/SendSharp";
@@ -40,6 +41,7 @@ const ListGeneratorForm = ({
   handleSubmit: (a: GeneratedList) => void;
 }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [hasPreviouslyUsedFiles, setHasPreviouslyUsedFiles] = useState(false);
   const [daysToShipFile, setDaysToShipFile] = useState<File[] | null>(null);
   const [bigSellerOrdersFile, setBigSellerOrdersFile] = useState<File[] | null>(
     null
@@ -51,6 +53,7 @@ const ListGeneratorForm = ({
       console.log(dtsFiles);
       if (dtsFiles.length > 0) {
         setDaysToShipFile(dtsFiles);
+        setHasPreviouslyUsedFiles(true);
       } else {
         console.log("No previously used files.", currentUser);
       }
@@ -68,6 +71,7 @@ const ListGeneratorForm = ({
   const handleReset = () => {
     setDaysToShipFile(null);
     setBigSellerOrdersFile(null);
+    setHasPreviouslyUsedFiles(false);
     // resetCurrentGeneratedList();
   };
 
@@ -110,7 +114,7 @@ const ListGeneratorForm = ({
     <form onSubmit={onSubmit}>
       <FormControl fullWidth>
         <Typography sx={{ fontWeight: "bold" }}>
-          DTS File from Shopee
+          DTS Files from Shopee
           <Tooltip title="Supports multiple files" placement="right">
             <IconButton>
               <InfoIcon fontSize="small" />
@@ -146,6 +150,11 @@ const ListGeneratorForm = ({
               multiple
             />
           </Button>
+        )}
+        {hasPreviouslyUsedFiles && (
+          <Alert sx={{ my: 1 }} severity="success">
+            Loaded previously used DTS files from Shopee
+          </Alert>
         )}
 
         <Typography sx={{ fontWeight: "bold" }}>
