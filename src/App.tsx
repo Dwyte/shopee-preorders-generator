@@ -91,6 +91,7 @@ const App = () => {
                 path="/newList"
                 element={
                   <ListGeneratorForm
+                    currentUser={currentUser}
                     handleSubmit={handleListGeneratorFormSubmit}
                   />
                 }

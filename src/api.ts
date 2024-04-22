@@ -119,23 +119,27 @@ export const uploadFile = async (file: File, directory: string) => {
   );
 
   const downloadURL = await getDownloadURL(snapshot.ref);
-  console.log(downloadURL);
+  console.log(`${file.name} uploaded: `, downloadURL);
   return downloadURL;
 };
 
 export const deleteFIle = async (directory: string) => {
-  const storageRef = ref(storage, directory);
+  try {
+    const storageRef = ref(storage, directory);
+    await deleteObject(storageRef);
 
-  await deleteObject(storageRef);
-  console.log("Delete Done!");
+    console.log("Delete Done!");
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const uploadUserDTSFiles = async (user: string, files: File[]) => {
   // Upload new files, and store file directories
   const newDTSFiles = [];
   for (let file of files) {
-    await uploadFile(file, `${user}/dts-files`);
-    newDTSFiles.push(`${user}/dts-files`);
+    await uploadFile(file, `dts-files/${user}`);
+    newDTSFiles.push(`dts-files/${user}/${file.name}`);
   }
 
   // Get Current User Settings
@@ -149,12 +153,11 @@ export const uploadUserDTSFiles = async (user: string, files: File[]) => {
 
   // Delete current DTS Files
   for (let fileDir of userSettings.data().dtsFiles) {
-    const storageRef = ref(storage, fileDir);
-    await deleteObject(storageRef);
+    await deleteFIle(fileDir);
   }
 
   // Update user settings with new Dts files directories
-  const docRef = doc(db, GENERATED_LISTS_COLLECTION_NAME, userSettings.id);
+  const docRef = doc(db, USER_SETTINGS_COLLECTION_NAME, userSettings.id);
   await updateDoc(docRef, { dtsFiles: newDTSFiles });
 
   console.log("Updated user settings", user);
@@ -171,13 +174,17 @@ export const downloadUserDTSFiles = async (user: string) => {
   const userDTSFiles = [];
 
   for (let fileDir of userSettings.data().dtsFiles) {
-    const storageRef = ref(storage, fileDir);
-    const fileBlob = await getBlob(storageRef);
-    const fileDirSplit = fileDir.split("/");
-    const fileName = fileDirSplit[fileDirSplit.length - 1];
+    try {
+      const storageRef = ref(storage, fileDir);
+      const fileBlob = await getBlob(storageRef);
+      const fileDirSplit = fileDir.split("/");
+      const fileName = fileDirSplit[fileDirSplit.length - 1];
 
-    const dtsFile = new File([fileBlob], fileName);
-    userDTSFiles.push(dtsFile);
+      const dtsFile = new File([fileBlob], fileName);
+      userDTSFiles.push(dtsFile);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   return userDTSFiles;

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { generateListFromFiles } from "../scripts";
 import { GeneratedList } from "../types";
 import {
@@ -8,12 +8,14 @@ import {
   Stack,
   Tooltip,
   IconButton,
+  Skeleton,
 } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SendSharpIcon from "@mui/icons-material/SendSharp";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useNavigate } from "react-router-dom";
 import InfoIcon from "@mui/icons-material/Info";
+import { downloadUserDTSFiles, uploadUserDTSFiles } from "../api";
 
 const displayFileNames = (fileList: File[] | null) => () => {
   if (!fileList) return "Drag & Drop file(s) here or click";
@@ -31,16 +33,38 @@ const hiddenInputStyle: React.CSSProperties = {
 };
 
 const ListGeneratorForm = ({
+  currentUser,
   handleSubmit,
 }: {
+  currentUser: string;
   handleSubmit: (a: GeneratedList) => void;
 }) => {
+  const [isLoading, setIsLoading] = useState(true);
   const [daysToShipFile, setDaysToShipFile] = useState<File[] | null>(null);
   const [bigSellerOrdersFile, setBigSellerOrdersFile] = useState<File[] | null>(
     null
   );
 
+  useEffect(() => {
+    const getPreviouslyUsedDTSFiles = async () => {
+      const dtsFiles = await downloadUserDTSFiles(currentUser);
+      console.log(dtsFiles);
+      if (dtsFiles.length > 0) {
+        setDaysToShipFile(dtsFiles);
+      } else {
+        console.log("No previously used files.", currentUser);
+      }
+
+      setIsLoading(false);
+    };
+
+    if (currentUser) {
+      getPreviouslyUsedDTSFiles();
+    }
+  }, [currentUser]);
+
   const navigate = useNavigate();
+
   const handleReset = () => {
     setDaysToShipFile(null);
     setBigSellerOrdersFile(null);
@@ -67,6 +91,7 @@ const ListGeneratorForm = ({
         bigSellerOrdersFile
       );
 
+      await uploadUserDTSFiles(currentUser, daysToShipFile);
       handleSubmit(generatedList);
       navigate("/history");
     }
@@ -92,29 +117,36 @@ const ListGeneratorForm = ({
             </IconButton>
           </Tooltip>
         </Typography>
-
-        <Button
-          sx={{
-            my: 1,
-            height: 128,
-            border: "dashed 1px",
-            fontSize: 16,
-          }}
-          component="label"
-          variant="outlined"
-          startIcon={<FileUploadIcon />}
-          color={daysToShipFile ? "success" : "primary"}
-        >
-          {daysToShipFilesNamePreview}
-          <input
-            type="file"
-            accept=".xlsx"
-            style={hiddenInputStyle}
-            onChange={(event) => handleFileChange(event, setDaysToShipFile)}
-            multiple
-            required
+        {isLoading ? (
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            height={128}
+            sx={{ borderRadius: 1 }}
           />
-        </Button>
+        ) : (
+          <Button
+            sx={{
+              my: 1,
+              height: 128,
+              border: "dashed 1px",
+              fontSize: 16,
+            }}
+            component="label"
+            variant="outlined"
+            startIcon={<FileUploadIcon />}
+            color={daysToShipFile ? "success" : "primary"}
+          >
+            {daysToShipFilesNamePreview}
+            <input
+              type="file"
+              accept=".xlsx"
+              style={hiddenInputStyle}
+              onChange={(event) => handleFileChange(event, setDaysToShipFile)}
+              multiple
+            />
+          </Button>
+        )}
 
         <Typography sx={{ fontWeight: "bold" }}>
           New Orders Files from BigSeller
@@ -125,33 +157,41 @@ const ListGeneratorForm = ({
           </Tooltip>
         </Typography>
 
-        <Button
-          sx={{
-            my: 1,
-            height: 128,
-            border: "dashed 1px",
-            fontSize: 16,
-          }}
-          component="label"
-          variant="outlined"
-          startIcon={<FileUploadIcon />}
-          color={bigSellerOrdersFile ? "success" : "primary"}
-        >
-          {bigsellerOrdersFilesNamePreview}
-          <input
-            type="file"
-            accept=".xlsx"
-            style={hiddenInputStyle}
-            onChange={(event) =>
-              handleFileChange(event, setBigSellerOrdersFile)
-            }
-            required
-            multiple
+        {isLoading ? (
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            height={128}
+            sx={{ borderRadius: 1 }}
           />
-        </Button>
+        ) : (
+          <Button
+            sx={{
+              my: 1,
+              height: 128,
+              border: "dashed 1px",
+              fontSize: 16,
+            }}
+            component="label"
+            variant="outlined"
+            startIcon={<FileUploadIcon />}
+            color={bigSellerOrdersFile ? "success" : "primary"}
+          >
+            {bigsellerOrdersFilesNamePreview}
+            <input
+              type="file"
+              accept=".xlsx"
+              style={hiddenInputStyle}
+              onChange={(event) =>
+                handleFileChange(event, setBigSellerOrdersFile)
+              }
+              multiple
+            />
+          </Button>
+        )}
       </FormControl>
 
-      <Stack direction="row-reverse" spacing={1}>
+      <Stack sx={{ my: 1 }} direction="row-reverse" spacing={1}>
         <Button
           variant="contained"
           type="submit"
