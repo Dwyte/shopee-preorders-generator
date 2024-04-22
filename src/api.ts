@@ -6,6 +6,7 @@ import {
   getDownloadURL,
   uploadBytesResumable,
   deleteObject,
+  getBlob,
 } from "firebase/storage";
 ``;
 import {
@@ -157,4 +158,27 @@ export const uploadUserDTSFiles = async (user: string, files: File[]) => {
   await updateDoc(docRef, { dtsFiles: newDTSFiles });
 
   console.log("Updated user settings", user);
+};
+
+export const downloadUserDTSFiles = async (user: string) => {
+  const userSettingsCollectionRef = collection(
+    db,
+    USER_SETTINGS_COLLECTION_NAME
+  );
+
+  const q = query(userSettingsCollectionRef, where("user", "==", user));
+  const userSettings = (await getDocs(q)).docs[0];
+  const userDTSFiles = [];
+
+  for (let fileDir of userSettings.data().dtsFiles) {
+    const storageRef = ref(storage, fileDir);
+    const fileBlob = await getBlob(storageRef);
+    const fileDirSplit = fileDir.split("/");
+    const fileName = fileDirSplit[fileDirSplit.length - 1];
+
+    const dtsFile = new File([fileBlob], fileName);
+    userDTSFiles.push(dtsFile);
+  }
+
+  return userDTSFiles;
 };
