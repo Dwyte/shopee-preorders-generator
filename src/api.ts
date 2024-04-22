@@ -135,11 +135,9 @@ export const deleteFIle = async (directory: string) => {
 };
 
 export const uploadUserDTSFiles = async (user: string, files: File[]) => {
-  // Upload new files, and store file directories
-  const newDTSFiles = [];
-  for (let file of files) {
-    await uploadFile(file, `dts-files/${user}`);
-    newDTSFiles.push(`dts-files/${user}/${file.name}`);
+  if (!user || !files) {
+    console.error("Invalid arguments: ", user, files);
+    return;
   }
 
   // Get Current User Settings
@@ -156,11 +154,18 @@ export const uploadUserDTSFiles = async (user: string, files: File[]) => {
     await deleteFIle(fileDir);
   }
 
+  // Upload new files, and store file directories
+  const newDTSFiles = [];
+  for (let file of files) {
+    await uploadFile(file, `dts-files/${user}`);
+    newDTSFiles.push(`dts-files/${user}/${file.name}`);
+  }
+
   // Update user settings with new Dts files directories
   const docRef = doc(db, USER_SETTINGS_COLLECTION_NAME, userSettings.id);
   await updateDoc(docRef, { dtsFiles: newDTSFiles });
 
-  console.log("Updated user settings", user);
+  console.log("Updated user settings", user, files);
 };
 
 export const downloadUserDTSFiles = async (user: string) => {

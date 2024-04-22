@@ -94,7 +94,6 @@ const ListGeneratorForm = ({
         daysToShipFile,
         bigSellerOrdersFile
       );
-
       await uploadUserDTSFiles(currentUser, daysToShipFile);
       handleSubmit(generatedList);
       navigate("/history");
