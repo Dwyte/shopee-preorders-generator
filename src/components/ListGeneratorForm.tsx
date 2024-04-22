@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { generateListFromFiles } from "../scripts";
 import { GeneratedList } from "../types";
 import {
@@ -10,6 +10,7 @@ import {
   IconButton,
   Skeleton,
   Alert,
+  LinearProgress,
 } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SendSharpIcon from "@mui/icons-material/SendSharp";
@@ -40,12 +41,16 @@ const ListGeneratorForm = ({
   currentUser: string;
   handleSubmit: (a: GeneratedList) => void;
 }) => {
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPreviouslyUsedFiles, setHasPreviouslyUsedFiles] = useState(false);
   const [daysToShipFile, setDaysToShipFile] = useState<File[] | null>(null);
   const [bigSellerOrdersFile, setBigSellerOrdersFile] = useState<File[] | null>(
     null
   );
+
+  const dtsFileInputRef = useRef<HTMLInputElement>(null);
+  const bigSellerFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const getPreviouslyUsedDTSFiles = async () => {
@@ -72,7 +77,14 @@ const ListGeneratorForm = ({
     setDaysToShipFile(null);
     setBigSellerOrdersFile(null);
     setHasPreviouslyUsedFiles(false);
-    // resetCurrentGeneratedList();
+
+    if (dtsFileInputRef.current) {
+      dtsFileInputRef.current.value = "";
+    }
+
+    if (bigSellerFileInputRef.current) {
+      bigSellerFileInputRef.current.value = "";
+    }
   };
 
   const handleFileChange = (
@@ -88,6 +100,7 @@ const ListGeneratorForm = ({
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
+    setIsGenerating(true);
 
     if (daysToShipFile !== null && bigSellerOrdersFile !== null) {
       const generatedList = await generateListFromFiles(
@@ -146,6 +159,7 @@ const ListGeneratorForm = ({
               accept=".xlsx"
               style={hiddenInputStyle}
               onChange={(event) => handleFileChange(event, setDaysToShipFile)}
+              ref={dtsFileInputRef}
               multiple
             />
           </Button>
@@ -193,32 +207,36 @@ const ListGeneratorForm = ({
               onChange={(event) =>
                 handleFileChange(event, setBigSellerOrdersFile)
               }
+              ref={bigSellerFileInputRef}
               multiple
             />
           </Button>
         )}
       </FormControl>
-
-      <Stack sx={{ my: 1 }} direction="row-reverse" spacing={1}>
-        <Button
-          variant="contained"
-          type="submit"
-          endIcon={<SendSharpIcon />}
-          color="success"
-          disabled={!(daysToShipFile && bigSellerOrdersFile)}
-        >
-          Generate
-        </Button>
-        <Button
-          variant="outlined"
-          endIcon={<RestartAltIcon />}
-          color="error"
-          disabled={!(daysToShipFile || bigSellerOrdersFile)}
-          onClick={handleReset}
-        >
-          Reset
-        </Button>
-      </Stack>
+      {isGenerating ? (
+        <LinearProgress />
+      ) : (
+        <Stack sx={{ my: 1 }} direction="row-reverse" spacing={1}>
+          <Button
+            variant="contained"
+            type="submit"
+            endIcon={<SendSharpIcon />}
+            color="success"
+            disabled={!(daysToShipFile && bigSellerOrdersFile)}
+          >
+            Generate
+          </Button>
+          <Button
+            variant="outlined"
+            endIcon={<RestartAltIcon />}
+            color="error"
+            disabled={!(daysToShipFile || bigSellerOrdersFile)}
+            onClick={handleReset}
+          >
+            Reset
+          </Button>
+        </Stack>
+      )}
     </form>
   );
 };
