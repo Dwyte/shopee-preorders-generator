@@ -6,6 +6,7 @@ import { updateUserGeneratedList } from "../api";
 import { disectSupplierCode, timestampToDatetimeText } from "../scripts";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CopyAllIcon from "@mui/icons-material/CopyAll";
 
 interface PropType {
   currentUserGeneratedList: UserGeneratedList;
@@ -67,6 +68,19 @@ const UserGeneratedListSection = (props: PropType) => {
     alert("Changes Saved.");
   };
 
+  const handleCopyList = () => {
+    let wholeListText = "";
+
+    for (let supplierCode in props.currentUserGeneratedList.generatedList) {
+      wholeListText +=
+        supplierCode +
+        "\n" +
+        props.currentUserGeneratedList.generatedList[supplierCode];
+    }
+
+    navigator.clipboard.writeText(wholeListText);
+  };
+
   return (
     <Box>
       <Box display="flex" sx={{ my: 1 }}>
@@ -98,6 +112,14 @@ const UserGeneratedListSection = (props: PropType) => {
             startIcon={<DeleteIcon />}
           >
             Delete List
+          </Button>
+          <Button
+            color="success"
+            variant="outlined"
+            onClick={handleCopyList}
+            startIcon={<CopyAllIcon />}
+          >
+            Copy List
           </Button>
         </Stack>
       </Box>
