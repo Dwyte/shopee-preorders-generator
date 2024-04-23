@@ -82,8 +82,7 @@ const UserGeneratedListSection = (props: PropType) => {
       generatedList: generatedListDraft,
     });
     setHasUnsavedChanges(false);
-    setSnackBarText("Changes saved successfully.");
-    setIsSnackBarOpen(true);
+    showSnackBar("Changes saved successfully.");
   };
 
   const handleCopyList = () => {
@@ -97,7 +96,12 @@ const UserGeneratedListSection = (props: PropType) => {
     }
 
     navigator.clipboard.writeText(wholeListText);
-    setSnackBarText("Copied whole list to clipboard.");
+    showSnackBar("Copied whole list to clipboard.");
+  };
+
+  const showSnackBar = (message: string) => {
+    setIsSnackBarOpen(false);
+    setSnackBarText(message);
     setIsSnackBarOpen(true);
   };
 
@@ -182,6 +186,7 @@ const UserGeneratedListSection = (props: PropType) => {
           key={index}
           supplierCode={supplierCode}
           productsToOrderText={generatedListDraft[supplierCode]}
+          onCopy={() => showSnackBar("Copied successfully.")}
           onProductsToOrderTextChange={handleProductsToOrderTextChange}
         />
       ))}

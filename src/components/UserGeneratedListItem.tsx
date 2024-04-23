@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { styled } from "@mui/system";
-import { useState } from "react";
 import SupplierName from "./SupplierName";
 
 const blue = {
@@ -71,23 +70,19 @@ const TextareaAutosize = styled(BaseTextareAutosize)(
 interface Props {
   supplierCode: string;
   productsToOrderText: string;
+  onCopy: () => void;
   onProductsToOrderTextChange: (supplierCode: string, newValue: string) => void;
 }
 
 const UserGeneratedListItem = ({
   supplierCode,
   productsToOrderText,
+  onCopy,
   onProductsToOrderTextChange,
 }: Props) => {
-  const [copyState, setCopyState] = useState(false);
-
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(productsToOrderText);
-    setCopyState(true);
-
-    setTimeout(() => {
-      setCopyState(false);
-    }, 1000);
+    onCopy();
   };
 
   const handleTextAreChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
@@ -114,10 +109,10 @@ const UserGeneratedListItem = ({
           sx={{ mt: 1 }}
           onClick={handleCopyToClipboard}
           startIcon={<ContentCopyIcon />}
-          color={copyState ? "success" : "primary"}
-          variant={copyState ? "contained" : "outlined"}
+          color={"primary"}
+          variant={"outlined"}
         >
-          {copyState ? "Copied!" : "Copy to Clipboard"}
+          Copy to Clipboard
         </Button>
       </Box>
     </Card>
