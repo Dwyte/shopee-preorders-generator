@@ -67,6 +67,7 @@ const ListGeneratorForm = ({
     };
 
     if (currentUser) {
+      setIsLoading(true);
       getPreviouslyUsedDTSFiles();
     }
   }, [currentUser]);
