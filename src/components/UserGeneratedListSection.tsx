@@ -1,4 +1,13 @@
-import { Alert, Box, Button, Divider, Stack, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  Snackbar,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { UserGeneratedList } from "../types";
 import UserGeneratedListItem from "./UserGeneratedListItem";
 import { useEffect, useState } from "react";
@@ -7,6 +16,7 @@ import { disectSupplierCode, timestampToDatetimeText } from "../scripts";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CopyAllIcon from "@mui/icons-material/CopyAll";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface PropType {
   currentUserGeneratedList: UserGeneratedList;
@@ -14,6 +24,9 @@ interface PropType {
 }
 
 const UserGeneratedListSection = (props: PropType) => {
+  const [isSnackBarOpen, setIsSnackBarOpen] = useState(false);
+  const [snackBarText, setSnackBarText] = useState("Default Snackbar Text");
+
   const [generatedListDraft, setGeneratedListDraft] = useState(
     props.currentUserGeneratedList.generatedList
   );
@@ -49,6 +62,10 @@ const UserGeneratedListSection = (props: PropType) => {
     setGeneratedListDraft(props.currentUserGeneratedList.generatedList);
   }, [props.currentUserGeneratedList]);
 
+  const handleSnackbarClose = () => {
+    setIsSnackBarOpen(false);
+  };
+
   const handleProductsToOrderTextChange = (
     supplierCode: string,
     newValue: string
@@ -65,7 +82,8 @@ const UserGeneratedListSection = (props: PropType) => {
       generatedList: generatedListDraft,
     });
     setHasUnsavedChanges(false);
-    alert("Changes Saved.");
+    setSnackBarText("Changes saved successfully.");
+    setIsSnackBarOpen(true);
   };
 
   const handleCopyList = () => {
@@ -79,10 +97,37 @@ const UserGeneratedListSection = (props: PropType) => {
     }
 
     navigator.clipboard.writeText(wholeListText);
+    setSnackBarText("Copied whole list to clipboard.");
+    setIsSnackBarOpen(true);
   };
+
+  const snackBarAction = (
+    <>
+      {/* <Button color="secondary" size="small" onClick={handleSnackbarClose}>
+        UNDO
+      </Button> */}
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={handleSnackbarClose}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </>
+  );
 
   return (
     <Box>
+      <Snackbar
+        open={isSnackBarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        message={snackBarText}
+        action={snackBarAction}
+        anchorOrigin={{ horizontal: "center", vertical: "top" }}
+      />
+
       <Box display="flex" sx={{ my: 1 }}>
         <Typography sx={{ p: 1 }} flex={1} component="h1">
           Last Edited:{" "}
