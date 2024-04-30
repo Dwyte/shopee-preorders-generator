@@ -1,7 +1,7 @@
 import {
-  Alert,
   Box,
   Button,
+  CircularProgress,
   Divider,
   IconButton,
   Snackbar,
@@ -13,7 +13,6 @@ import UserGeneratedListItem from "./UserGeneratedListItem";
 import { useEffect, useState } from "react";
 import { updateUserGeneratedList } from "../api";
 import { disectSupplierCode, timestampToDatetimeText } from "../scripts";
-import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CopyAllIcon from "@mui/icons-material/CopyAll";
 import CloseIcon from "@mui/icons-material/Close";
@@ -26,6 +25,9 @@ interface PropType {
 const UserGeneratedListSection = (props: PropType) => {
   const [isSnackBarOpen, setIsSnackBarOpen] = useState(false);
   const [snackBarText, setSnackBarText] = useState("Default Snackbar Text");
+  const [unsavedChanges, setUnsavedChanges] = useState<{} | null>(null);
+  const [currentTimeoutId, setCurrentTimeoutId] =
+    useState<NodeJS.Timeout | null>(null);
 
   const [generatedListDraft, setGeneratedListDraft] = useState(
     props.currentUserGeneratedList.generatedList
@@ -70,19 +72,43 @@ const UserGeneratedListSection = (props: PropType) => {
     supplierCode: string,
     newValue: string
   ) => {
-    setGeneratedListDraft((currentGeneratedListDraft) => ({
-      ...currentGeneratedListDraft,
+    const newGeneratedListDraft = {
+      ...generatedListDraft,
       [supplierCode]: newValue,
-    }));
-    setHasUnsavedChanges(true);
-  };
+    };
 
-  const handleSaveChanges = async () => {
-    await updateUserGeneratedList(props.currentUserGeneratedList.id, {
-      generatedList: generatedListDraft,
-    });
-    setHasUnsavedChanges(false);
-    showSnackBar("Changes saved successfully.");
+    setGeneratedListDraft(newGeneratedListDraft);
+    setHasUnsavedChanges(true);
+
+    if (currentTimeoutId) {
+      clearTimeout(currentTimeoutId);
+    }
+
+    let newUnsavedChanges = {
+      [`generatedList.${supplierCode}`]: newValue,
+    };
+
+    if (unsavedChanges) {
+      newUnsavedChanges = { ...unsavedChanges, ...newUnsavedChanges };
+    }
+
+    setUnsavedChanges(newUnsavedChanges);
+
+    setUnsavedChanges;
+
+    const handleSaveChanges = async () => {
+      await updateUserGeneratedList(
+        props.currentUserGeneratedList.id,
+        newUnsavedChanges
+      );
+
+      console.log(newUnsavedChanges);
+
+      setHasUnsavedChanges(false);
+      showSnackBar("Changes saved successfully.");
+    };
+
+    setCurrentTimeoutId(setTimeout(handleSaveChanges, 2500));
   };
 
   const handleCopyList = () => {
@@ -133,23 +159,23 @@ const UserGeneratedListSection = (props: PropType) => {
       />
 
       <Box display="flex" sx={{ my: 1 }}>
+        {hasUnsavedChanges && <CircularProgress size={40} />}
+
         <Typography sx={{ p: 1 }} flex={1} component="h1">
-          Last Edited:{" "}
-          {props.currentUserGeneratedList.updateTime
-            ? timestampToDatetimeText(props.currentUserGeneratedList.updateTime)
-            : "No edits made yet."}
+          {hasUnsavedChanges ? (
+            "Saving changes..."
+          ) : (
+            <>
+              Last Edited:
+              {props.currentUserGeneratedList.updateTime
+                ? timestampToDatetimeText(
+                    props.currentUserGeneratedList.updateTime
+                  )
+                : "No edits made yet."}
+            </>
+          )}
         </Typography>
         <Stack direction="row-reverse" spacing={1}>
-          {hasUnsavedChanges && (
-            <Button
-              color="primary"
-              variant="contained"
-              onClick={handleSaveChanges}
-              startIcon={<SaveIcon />}
-            >
-              Save Changes
-            </Button>
-          )}
           <Button
             color="error"
             variant="outlined"
@@ -159,6 +185,7 @@ const UserGeneratedListSection = (props: PropType) => {
               )
             }
             startIcon={<DeleteIcon />}
+            disabled={hasUnsavedChanges}
           >
             Delete List
           </Button>
@@ -172,12 +199,6 @@ const UserGeneratedListSection = (props: PropType) => {
           </Button>
         </Stack>
       </Box>
-
-      {hasUnsavedChanges && (
-        <Alert sx={{ my: 1 }} severity="error">
-          You have unsaved changes.{" "}
-        </Alert>
-      )}
 
       <Divider sx={{ mb: 2 }} />
 
