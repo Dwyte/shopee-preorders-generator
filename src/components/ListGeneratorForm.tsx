@@ -17,7 +17,11 @@ import SendSharpIcon from "@mui/icons-material/SendSharp";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useNavigate } from "react-router-dom";
 import InfoIcon from "@mui/icons-material/Info";
-import { downloadUserDTSFiles, uploadUserDTSFiles } from "../api";
+import {
+  downloadUserDTSFiles,
+  getUserSettings,
+  uploadUserDTSFiles,
+} from "../api";
 
 const displayFileNames = (fileList: File[] | null) => () => {
   if (!fileList) return "Drag & Drop file(s) here or click";
@@ -48,9 +52,23 @@ const ListGeneratorForm = ({
   const [bigSellerOrdersFile, setBigSellerOrdersFile] = useState<File[] | null>(
     null
   );
+  const [hasNewItemsRecently, setHasNewItemsRecently] = useState(false);
 
   const dtsFileInputRef = useRef<HTMLInputElement>(null);
   const bigSellerFileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const initializeUserSettings = async () => {
+      const userSettings = await getUserSettings(currentUser);
+
+      if (userSettings?.hasNewItemsRecently) {
+        setHasNewItemsRecently(true);
+      }
+    };
+
+    setHasNewItemsRecently(false);
+    initializeUserSettings();
+  }, [currentUser]);
 
   useEffect(() => {
     const getPreviouslyUsedDTSFiles = async () => {
@@ -61,9 +79,11 @@ const ListGeneratorForm = ({
         setHasPreviouslyUsedFiles(true);
       } else {
         console.log("No previously used files.", currentUser);
+        setDaysToShipFile(null);
+        setHasPreviouslyUsedFiles(false);
       }
 
-      setIsLoading(false);
+      setTimeout(() => setIsLoading(false), 1000);
     };
 
     if (currentUser) {
@@ -165,10 +185,18 @@ const ListGeneratorForm = ({
             />
           </Button>
         )}
-        {hasPreviouslyUsedFiles && (
+
+        {!isLoading && hasNewItemsRecently && hasPreviouslyUsedFiles && (
           <Alert sx={{ my: 1 }} severity="success">
             Loaded previously used DTS files from Shopee, click <b>Reset</b> if
             you want to change.
+          </Alert>
+        )}
+
+        {!isLoading && hasNewItemsRecently && (
+          <Alert sx={{ my: 1 }} severity="error">
+            Generate a new <b>DTS file</b> from Shopee. New Products has been
+            added recently.
           </Alert>
         )}
 

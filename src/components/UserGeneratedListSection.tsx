@@ -133,9 +133,6 @@ const UserGeneratedListSection = (props: PropType) => {
 
   const snackBarAction = (
     <>
-      {/* <Button color="secondary" size="small" onClick={handleSnackbarClose}>
-        UNDO
-      </Button> */}
       <IconButton
         size="small"
         aria-label="close"

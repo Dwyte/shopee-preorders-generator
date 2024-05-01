@@ -134,13 +134,7 @@ export const deleteFIle = async (directory: string) => {
   }
 };
 
-export const uploadUserDTSFiles = async (user: string, files: File[]) => {
-  if (!user || !files) {
-    console.error("Invalid arguments: ", user, files);
-    return;
-  }
-
-  // Get Current User Settings
+export const getUserSettings = async (user: string) => {
   const userSettingsCollectionRef = collection(
     db,
     USER_SETTINGS_COLLECTION_NAME
@@ -149,8 +143,20 @@ export const uploadUserDTSFiles = async (user: string, files: File[]) => {
   const q = query(userSettingsCollectionRef, where("user", "==", user));
   const userSettings = (await getDocs(q)).docs[0];
 
+  return userSettings.data();
+};
+
+export const uploadUserDTSFiles = async (user: string, files: File[]) => {
+  if (!user || !files) {
+    console.error("Invalid arguments: ", user, files);
+    return;
+  }
+
+  // Get Current User Settings
+  const userSettings = await getUserSettings(user);
+
   // Delete current DTS Files
-  for (let fileDir of userSettings.data().dtsFiles) {
+  for (let fileDir of userSettings.dtsFiles) {
     await deleteFIle(fileDir);
   }
 
@@ -169,16 +175,10 @@ export const uploadUserDTSFiles = async (user: string, files: File[]) => {
 };
 
 export const downloadUserDTSFiles = async (user: string) => {
-  const userSettingsCollectionRef = collection(
-    db,
-    USER_SETTINGS_COLLECTION_NAME
-  );
-
-  const q = query(userSettingsCollectionRef, where("user", "==", user));
-  const userSettings = (await getDocs(q)).docs[0];
+  const userSettings = await getUserSettings(user);
   const userDTSFiles = [];
 
-  for (let fileDir of userSettings.data().dtsFiles) {
+  for (let fileDir of userSettings.dtsFiles) {
     try {
       const storageRef = ref(storage, fileDir);
       const fileBlob = await getBlob(storageRef);
