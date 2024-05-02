@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { generateListFromFiles } from "../scripts";
+import { generateListFromFiles, validateDTSFile } from "../scripts";
 import { GeneratedList } from "../types";
 import {
   FormControl,
@@ -108,11 +108,28 @@ const ListGeneratorForm = ({
     }
   };
 
-  const handleFileChange = (
+  const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
-    setter: React.Dispatch<React.SetStateAction<File[] | null>>
+    setter: React.Dispatch<React.SetStateAction<File[] | null>>,
+    validator?: (file: File) => Promise<boolean>
   ) => {
-    if (event.target.files && event.target.files.length > 0) {
+    if (event.target.files === null) {
+      setter(null);
+      return;
+    }
+
+    // Optional validation
+    if (validator) {
+      for (let file of event.target.files) {
+        if (await validator(file)) {
+          console.log("Valid File!");
+        } else {
+          console.error("Invalid File!");
+        }
+      }
+    }
+
+    if (event.target.files.length > 0) {
       setter(Array.from(event.target.files));
     } else {
       setter(null);
@@ -179,7 +196,9 @@ const ListGeneratorForm = ({
               type="file"
               accept=".xlsx"
               style={hiddenInputStyle}
-              onChange={(event) => handleFileChange(event, setDaysToShipFile)}
+              onChange={(event) =>
+                handleFileChange(event, setDaysToShipFile, validateDTSFile)
+              }
               ref={dtsFileInputRef}
               multiple
             />

@@ -173,3 +173,46 @@ export const disectSupplierCode = (
 
   return result;
 };
+
+export const validateDTSFile = async (daysToShipFile: File) => {
+  const daysToShipWorkbook = XLSX.read(await daysToShipFile?.arrayBuffer());
+
+  // Assuming the first sheet is the one you want to read
+  const daysToShipSheetName = daysToShipWorkbook.SheetNames[0];
+  const daysToShipWorksheet = daysToShipWorkbook.Sheets[daysToShipSheetName];
+
+  // Convert Excel data to Array
+  const daysToShipRows = XLSX.utils.sheet_to_json(daysToShipWorksheet, {
+    header: 1,
+  });
+
+  // Run a loop for the rows
+  const daysToShipHeaderRow: number = 2;
+
+  const daysToShipFileHeader: string[] = daysToShipRows[daysToShipHeaderRow];
+  const validDaysToShipHeader = [
+    "Product ID",
+    "Parent SKU",
+    "Product Name",
+    "Category",
+    "Non Pre-order DTS",
+    "Pre-order DTS Range",
+    "Days to ship",
+    "Fail Reason",
+  ];
+
+  // Valid header and file header should be the same
+  if (daysToShipFileHeader.length !== validDaysToShipHeader.length) {
+    return false;
+  }
+
+  // Check if file header is the same with the valid header.
+  for (let i in daysToShipFileHeader) {
+    if (daysToShipFileHeader[i] !== validDaysToShipHeader[i]) {
+      return false;
+    }
+  }
+
+  // If both checks are ok, file must be valid
+  return true;
+};
