@@ -52,7 +52,7 @@ export const generateListFromFiles = async (
     });
 
     // Run a loop for the rows
-    const daysToShipStartingRow: number = 7;
+    const daysToShipStartingRow: number = 6;
 
     for (
       let rowIndex = daysToShipStartingRow - 1;
