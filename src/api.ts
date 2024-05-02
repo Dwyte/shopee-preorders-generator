@@ -20,6 +20,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  DocumentData,
 } from "firebase/firestore";
 import { GeneratedList, UserGeneratedList } from "./types";
 
@@ -143,7 +144,8 @@ export const getUserSettings = async (user: string) => {
   const q = query(userSettingsCollectionRef, where("user", "==", user));
   const userSettings = (await getDocs(q)).docs[0];
 
-  return userSettings.data();
+  // HOT FIX
+  return { ...userSettings.data(), id: userSettings.id } as DocumentData;
 };
 
 export const uploadUserDTSFiles = async (user: string, files: File[]) => {
@@ -168,6 +170,7 @@ export const uploadUserDTSFiles = async (user: string, files: File[]) => {
   }
 
   // Update user settings with new Dts files directories
+  console.log(USER_SETTINGS_COLLECTION_NAME, userSettings.id);
   const docRef = doc(db, USER_SETTINGS_COLLECTION_NAME, userSettings.id);
   await updateDoc(docRef, { dtsFiles: newDTSFiles });
 
