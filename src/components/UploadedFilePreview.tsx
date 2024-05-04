@@ -1,10 +1,23 @@
 import { Box, Typography } from "@mui/material";
 import ExcelIcon from "../assets/excel-icon.png";
 import { timestampToDatetimeText } from "../scripts";
+import { BigSellerOrdersMetadata, DTSFileMetadata } from "../types";
+
+interface CustomFile extends File {
+  metadata?: DTSFileMetadata & BigSellerOrdersMetadata;
+}
 
 interface Props {
-  file: File;
+  file: CustomFile;
 }
+
+const minimizeFileName = (fileName: string) => {
+  return fileName.length > 20
+    ? fileName.substring(0, 8) +
+        "..." +
+        fileName.substring(fileName.length - 9, fileName.length)
+    : fileName;
+};
 
 const UploadedFilePreview = ({ file }: Props) => {
   return (
@@ -14,9 +27,19 @@ const UploadedFilePreview = ({ file }: Props) => {
       </Box>
       <Box sx={{ flexDirection: "row", py: 2, px: 1 }}>
         <Typography sx={{ fontSize: "12px", textTransform: "none" }}>
-          <b>{file.name}</b> <br />
-          {timestampToDatetimeText(file.lastModified)} <br /> * Products <br />{" "}
-          * Pre-orders
+          <b>
+            {minimizeFileName(file.name)} — {Math.round(file.size / 1000)} KB
+          </b>{" "}
+          <br />
+          {timestampToDatetimeText(file.lastModified)} <br />
+          {file.metadata?.totalOrders ? (
+            <>{file.metadata?.totalOrders} orders</>
+          ) : (
+            <>
+              {file.metadata?.totalProducts} Products <br />{" "}
+              {file.metadata?.totalPreorderProducts} Pre-orders
+            </>
+          )}
         </Typography>
       </Box>
     </Box>

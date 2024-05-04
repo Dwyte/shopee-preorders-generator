@@ -24,3 +24,12 @@ export type MasuerteStallColor =
   | "violet"
   | "green"
   | "pink";
+
+export interface DTSFileMetadata {
+  totalProducts: number;
+  totalPreorderProducts: number;
+}
+
+export interface BigSellerOrdersMetadata {
+  totalOrders: number;
+}

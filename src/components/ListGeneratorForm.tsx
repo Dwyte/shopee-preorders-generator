@@ -1,6 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { generateListFromFiles, validateDTSFile } from "../scripts";
-import { GeneratedList } from "../types";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  generateListFromFiles,
+  validateBigSellerOrdersFile,
+  validateDTSFile,
+} from "../scripts";
+import {
+  BigSellerOrdersMetadata,
+  DTSFileMetadata,
+  GeneratedList,
+} from "../types";
 import {
   FormControl,
   Button,
@@ -69,6 +77,18 @@ const ListGeneratorForm = ({
       const dtsFiles = await downloadUserDTSFiles(currentUser);
       console.log(dtsFiles);
       if (dtsFiles.length > 0) {
+        for (let dtsFile of dtsFiles) {
+          const metadata = await validateDTSFile(dtsFile);
+
+          if (metadata) {
+            console.log("Valid File!");
+            Object.defineProperty(dtsFile, "metadata", {
+              value: metadata,
+              writable: true,
+            });
+          }
+        }
+
         setDaysToShipFile(dtsFiles);
         setHasPreviouslyUsedFiles(true);
       } else {
@@ -105,7 +125,9 @@ const ListGeneratorForm = ({
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
     setter: React.Dispatch<React.SetStateAction<File[] | null>>,
-    validator?: (file: File) => Promise<boolean>
+    validator?: (
+      file: File
+    ) => Promise<DTSFileMetadata | BigSellerOrdersMetadata | null>
   ) => {
     if (event.target.files === null) {
       setter(null);
@@ -115,8 +137,14 @@ const ListGeneratorForm = ({
     // Optional validation
     if (validator) {
       for (let file of event.target.files) {
-        if (await validator(file)) {
+        const metadata = await validator(file);
+
+        if (metadata) {
           console.log("Valid File!");
+          Object.defineProperty(file, "metadata", {
+            value: metadata,
+            writable: true,
+          });
         } else {
           console.error("Invalid File!");
         }
@@ -175,7 +203,7 @@ const ListGeneratorForm = ({
             }}
             component="label"
             variant="outlined"
-            // startIcon={<FileUploadIcon />}
+            startIcon={daysToShipFile ? null : <FileUploadIcon />}
             color={daysToShipFile ? "success" : "primary"}
           >
             {daysToShipFile ? (
@@ -240,7 +268,7 @@ const ListGeneratorForm = ({
             }}
             component="label"
             variant="outlined"
-            startIcon={<FileUploadIcon />}
+            startIcon={bigSellerOrdersFile ? null : <FileUploadIcon />}
             color={bigSellerOrdersFile ? "success" : "primary"}
           >
             {bigSellerOrdersFile ? (
@@ -257,7 +285,11 @@ const ListGeneratorForm = ({
               accept=".xlsx"
               style={hiddenInputStyle}
               onChange={(event) =>
-                handleFileChange(event, setBigSellerOrdersFile)
+                handleFileChange(
+                  event,
+                  setBigSellerOrdersFile,
+                  validateBigSellerOrdersFile
+                )
               }
               ref={bigSellerFileInputRef}
               multiple

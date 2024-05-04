@@ -1,6 +1,12 @@
 // XLSX is a global from the standalone script
 import * as XLSX from "xlsx";
-import { GeneratedListMap, GeneratedList, MasuerteStallColor } from "./types";
+import {
+  GeneratedListMap,
+  GeneratedList,
+  MasuerteStallColor,
+  DTSFileMetadata,
+  BigSellerOrdersMetadata,
+} from "./types";
 
 const daysOfWeek = [
   "Sunday",
@@ -10,6 +16,26 @@ const daysOfWeek = [
   "Thursday",
   "Friday",
   "Saturday",
+];
+
+const validDaysToShipHeader = [
+  "Product ID",
+  "Parent SKU",
+  "Product Name",
+  "Category",
+  "Non Pre-order DTS",
+  "Pre-order DTS Range",
+  "Days to ship",
+  "Fail Reason",
+];
+
+const validBigSellerOrdersHeader = [
+  "Product Name",
+  "SKU",
+  "Variation Name",
+  "Quantity",
+  "Order No",
+  "Title",
 ];
 
 const simplifyGeneratedList = (generatedListMap: GeneratedListMap) => {
@@ -52,10 +78,11 @@ export const generateListFromFiles = async (
     });
 
     // Run a loop for the rows
+    // 0-indexed starting row is 7 in the actual file
     const daysToShipStartingRow: number = 6;
 
     for (
-      let rowIndex = daysToShipStartingRow - 1;
+      let rowIndex = daysToShipStartingRow;
       rowIndex < daysToShipRows.length;
       rowIndex++
     ) {
@@ -88,12 +115,13 @@ export const generateListFromFiles = async (
       }
     );
 
-    const startingRow = 2;
+    // 0-indexed it's 3rd row in the actual file
+    const startingRow = 1;
     // This (generatedListMap) will be a mapping of the products needed to be ordered.
     // Mapping generatedListMap -> SupplierCode/ParentSKU -> Product Name -> Variation -> Quantity
 
     for (
-      let rowIndex = startingRow - 1;
+      let rowIndex = startingRow;
       rowIndex < bigSellerOrdersRows.length;
       rowIndex++
     ) {
@@ -174,7 +202,9 @@ export const disectSupplierCode = (
   return result;
 };
 
-export const validateDTSFile = async (daysToShipFile: File) => {
+export const validateDTSFile = async (
+  daysToShipFile: File
+): Promise<DTSFileMetadata | null> => {
   const daysToShipWorkbook = XLSX.read(await daysToShipFile?.arrayBuffer());
 
   // Assuming the first sheet is the one you want to read
@@ -186,33 +216,98 @@ export const validateDTSFile = async (daysToShipFile: File) => {
     header: 1,
   });
 
-  // Run a loop for the rows
+  // Compare the headers
   const daysToShipHeaderRow: number = 2;
-
   const daysToShipFileHeader: string[] = daysToShipRows[daysToShipHeaderRow];
-  const validDaysToShipHeader = [
-    "Product ID",
-    "Parent SKU",
-    "Product Name",
-    "Category",
-    "Non Pre-order DTS",
-    "Pre-order DTS Range",
-    "Days to ship",
-    "Fail Reason",
-  ];
 
   // Valid header and file header should be the same
   if (daysToShipFileHeader.length !== validDaysToShipHeader.length) {
-    return false;
+    return null;
   }
 
   // Check if file header is the same with the valid header.
   for (let i in daysToShipFileHeader) {
     if (daysToShipFileHeader[i] !== validDaysToShipHeader[i]) {
-      return false;
+      return null;
     }
   }
 
-  // If both checks are ok, file must be valid
-  return true;
+  // If both checks are ok, file must be valid, loop through
+  const daysToShipStartingRow = 6;
+  let totalPreorderProducts = 0;
+
+  for (
+    let rowIndex = daysToShipHeaderRow;
+    rowIndex < daysToShipRows.length;
+    rowIndex++
+  ) {
+    const row = daysToShipRows[rowIndex];
+
+    const daysToShip = parseInt(row[6]);
+
+    if (daysToShip > 2) {
+      totalPreorderProducts += 1;
+    }
+  }
+
+  return {
+    totalPreorderProducts,
+    totalProducts: daysToShipRows.length - daysToShipStartingRow,
+  };
+};
+
+export const validateBigSellerOrdersFile = async (
+  bigSellerOrdersFile: File
+): Promise<DTSFileMetadata | BigSellerOrdersMetadata | null> => {
+  const bigSellerOrdersWorkbook = XLSX.read(
+    await bigSellerOrdersFile?.arrayBuffer()
+  );
+
+  // Assuming the first sheet is the one you want to read
+  const bigSellerOrdersSheetName = bigSellerOrdersWorkbook.SheetNames[0];
+  const bigSellerOrdersWorkSheet =
+    bigSellerOrdersWorkbook.Sheets[bigSellerOrdersSheetName];
+
+  // Convert Excel data to Array
+  const bigSellerOrdersRows = XLSX.utils.sheet_to_json(
+    bigSellerOrdersWorkSheet,
+    {
+      header: 1,
+    }
+  );
+
+  // Compare the headers
+  const bigSellerOrdersHeaderRow: number = 0;
+  const bigSellerOrdersHeader: string[] =
+    bigSellerOrdersRows[bigSellerOrdersHeaderRow];
+
+  // Valid header and file header should be the same
+  console.log(bigSellerOrdersHeader);
+  if (bigSellerOrdersHeader.length !== validBigSellerOrdersHeader.length) {
+    return null;
+  }
+
+  // Check if file header is the same with the valid header.
+  for (let i in bigSellerOrdersHeader) {
+    if (bigSellerOrdersHeader[i] !== validBigSellerOrdersHeader[i]) {
+      return null;
+    }
+  }
+
+  // If both checks are ok, file must be valid, loop through
+  const bigSellerOrdersStartingRow = 1;
+
+  const orderIds = new Set();
+
+  for (
+    let rowIndex = bigSellerOrdersStartingRow;
+    rowIndex < bigSellerOrdersRows.length;
+    rowIndex++
+  ) {
+    const row = bigSellerOrdersRows[rowIndex];
+    const orderId = row[4];
+    orderIds.add(orderId);
+  }
+
+  return { totalOrders: orderIds.size };
 };
