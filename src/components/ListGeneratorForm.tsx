@@ -11,6 +11,7 @@ import {
   Skeleton,
   Alert,
   LinearProgress,
+  Box,
 } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SendSharpIcon from "@mui/icons-material/SendSharp";
@@ -22,14 +23,7 @@ import {
   getUserSettings,
   uploadUserDTSFiles,
 } from "../api";
-
-const displayFileNames = (fileList: File[] | null) => () => {
-  if (!fileList) return "Drag & Drop file(s) here or click";
-  const fileNames = Array.from(fileList).map(
-    (f) => f.name.substring(0, 8) + "..." + f.name.substring(f.name.length - 8)
-  );
-  return fileNames.join(", ") + ` (${fileList.length})`;
-};
+import UploadedFilePreview from "./UploadedFilePreview";
 
 const hiddenInputStyle: React.CSSProperties = {
   position: "absolute",
@@ -151,15 +145,6 @@ const ListGeneratorForm = ({
     }
   };
 
-  const daysToShipFilesNamePreview = useMemo(displayFileNames(daysToShipFile), [
-    daysToShipFile,
-  ]);
-
-  const bigsellerOrdersFilesNamePreview = useMemo(
-    displayFileNames(bigSellerOrdersFile),
-    [bigSellerOrdersFile]
-  );
-
   return (
     <form onSubmit={onSubmit}>
       <FormControl fullWidth>
@@ -182,16 +167,26 @@ const ListGeneratorForm = ({
           <Button
             sx={{
               my: 1,
+              py: 1,
               height: 128,
               border: "dashed 1px",
               fontSize: 16,
+              overflow: "hidden",
             }}
             component="label"
             variant="outlined"
-            startIcon={<FileUploadIcon />}
+            // startIcon={<FileUploadIcon />}
             color={daysToShipFile ? "success" : "primary"}
           >
-            {daysToShipFilesNamePreview}
+            {daysToShipFile ? (
+              <Stack sx={{ mt: 1 }} direction="row" spacing={2}>
+                {daysToShipFile?.map((file: File) => (
+                  <UploadedFilePreview file={file} />
+                ))}
+              </Stack>
+            ) : (
+              <>Drag & Drop file(s) here or click</>
+            )}
             <input
               type="file"
               accept=".xlsx"
@@ -248,7 +243,15 @@ const ListGeneratorForm = ({
             startIcon={<FileUploadIcon />}
             color={bigSellerOrdersFile ? "success" : "primary"}
           >
-            {bigsellerOrdersFilesNamePreview}
+            {bigSellerOrdersFile ? (
+              <Stack sx={{ mt: 1 }} direction="row" spacing={2}>
+                {bigSellerOrdersFile?.map((file: File) => (
+                  <UploadedFilePreview file={file} />
+                ))}
+              </Stack>
+            ) : (
+              <>Drag & Drop file(s) here or click</>
+            )}
             <input
               type="file"
               accept=".xlsx"
