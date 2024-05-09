@@ -14,6 +14,7 @@ import {
   getUserGeneratedLists,
 } from "./api";
 import { GeneratedList, UserGeneratedList } from "./types";
+import Settings from "./components/Settings";
 
 const App = () => {
   const [currentUser, setUser] = useState<string>("");
@@ -119,6 +120,8 @@ const App = () => {
                   </>
                 }
               />
+
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/newList" replace />} />
             </Routes>
           </Box>

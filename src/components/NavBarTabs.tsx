@@ -18,6 +18,7 @@ const NavBarTabs = () => {
         to="/newList"
         value="/newList"
       />
+      <Tab component={Link} label="Settings" to="/settings" value="/settings" />
     </Tabs>
   );
 };

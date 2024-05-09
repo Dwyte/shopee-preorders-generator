@@ -19,7 +19,6 @@ import {
   Skeleton,
   Alert,
   LinearProgress,
-  Box,
 } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SendSharpIcon from "@mui/icons-material/SendSharp";
