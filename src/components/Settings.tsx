@@ -1,6 +1,23 @@
 import { Divider, Stack, Switch, Typography } from "@mui/material";
+import { getUserSettings, setUserHasNewItemsRecently } from "../api";
+import { useEffect, useState } from "react";
 
-const Settings = () => {
+const Settings = ({ currentUser }: { currentUser: string }) => {
+  const [hasNewItemsRecently, setHasNewItemsRecently] = useState(false);
+
+  useEffect(() => {
+    const initializeUserSettings = async () => {
+      const userSettings = await getUserSettings(currentUser);
+      console.log(userSettings);
+      if (userSettings?.hasNewItemsRecently) {
+        setHasNewItemsRecently(true);
+      }
+    };
+
+    setHasNewItemsRecently(false);
+    initializeUserSettings();
+  }, [currentUser]);
+
   return (
     <div>
       <Stack direction="row" alignItems="center">
@@ -8,7 +25,13 @@ const Settings = () => {
           Enable New DTS Info file Reminder
         </Typography>
 
-        <Switch />
+        <Switch
+          checked={hasNewItemsRecently}
+          onChange={() => {
+            setHasNewItemsRecently(!hasNewItemsRecently);
+            setUserHasNewItemsRecently(currentUser, !hasNewItemsRecently);
+          }}
+        />
       </Stack>
       <Typography variant="subtitle1">
         This will remove the currently saved DTS File and will show an alert to

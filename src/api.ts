@@ -1,5 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+// Storage for storing files
 import {
   getStorage,
   ref,
@@ -9,6 +10,7 @@ import {
   getBlob,
 } from "firebase/storage";
 ``;
+// Firestore for storing JSON Documents like MongoDB
 import {
   getFirestore,
   collection,
@@ -175,6 +177,16 @@ export const uploadUserDTSFiles = async (user: string, files: File[]) => {
   await updateDoc(docRef, { dtsFiles: newDTSFiles });
 
   console.log("Updated user settings", user, files);
+};
+
+export const setUserHasNewItemsRecently = async (
+  user: string,
+  newValue: boolean
+) => {
+  const userSettings = await getUserSettings(user);
+
+  const docRef = doc(db, USER_SETTINGS_COLLECTION_NAME, userSettings.id);
+  await updateDoc(docRef, { hasNewItemsRecently: newValue });
 };
 
 export const downloadUserDTSFiles = async (user: string) => {

@@ -227,7 +227,7 @@ const ListGeneratorForm = ({
           </Button>
         )}
 
-        {!isLoading && hasNewItemsRecently && hasPreviouslyUsedFiles && (
+        {!isLoading && hasPreviouslyUsedFiles && (
           <Alert sx={{ my: 1 }} severity="success">
             Loaded previously used DTS files from Shopee, click <b>Reset</b> if
             you want to change.

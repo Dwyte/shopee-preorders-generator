@@ -121,7 +121,10 @@ const App = () => {
                 }
               />
 
-              <Route path="/settings" element={<Settings />} />
+              <Route
+                path="/settings"
+                element={<Settings currentUser={currentUser} />}
+              />
               <Route path="*" element={<Navigate to="/newList" replace />} />
             </Routes>
           </Box>
