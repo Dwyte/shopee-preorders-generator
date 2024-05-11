@@ -1,9 +1,11 @@
 import { Divider, Stack, Switch, Typography } from "@mui/material";
 import { getUserSettings, setUserHasNewItemsRecently } from "../api";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import ThemeContext from "../contexts/ThemeContext";
 
 const Settings = ({ currentUser }: { currentUser: string }) => {
   const [hasNewItemsRecently, setHasNewItemsRecently] = useState(false);
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
   useEffect(() => {
     const initializeUserSettings = async () => {
@@ -34,12 +36,22 @@ const Settings = ({ currentUser }: { currentUser: string }) => {
         />
       </Stack>
       <Typography variant="subtitle1">
-        This will remove the currently saved DTS File and will show an alert to
-        user to generate a new one from Shopee. The Reminder will be
-        automatically disabled once a new DTS file has been used. Enable this if
-        you recently uploaded new products.
+        Enable this if you recently uploaded new products. This will show an
+        reminder to generate a new one DTS file from Shopee. This will be
+        automatically disabled once a new DTS file has been used.
       </Typography>
       <Divider sx={{ mt: 1 }} />
+
+      <Stack direction="row" alignItems="center">
+        <Typography sx={{ flex: 1 }} fontWeight="bold" variant="h6">
+          Dark Mode
+        </Typography>
+
+        <Switch checked={theme === "dark"} onChange={toggleTheme} />
+      </Stack>
+      <Typography variant="subtitle1">
+        Turn on for Dark mode, off for Light Mode.
+      </Typography>
     </div>
   );
 };

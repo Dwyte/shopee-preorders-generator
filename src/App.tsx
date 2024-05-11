@@ -16,7 +16,21 @@ import {
 import { GeneratedList, UserGeneratedList } from "./types";
 import Settings from "./components/Settings";
 
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import ThemeContext from "./contexts/ThemeContext";
+
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+  },
+});
+
+const lightTheme = createTheme();
+
 const App = () => {
+  const [currentTheme, setCurrentTheme] = useState("dark");
+
   const [currentUser, setUser] = useState<string>("");
 
   const [userGeneratedLists, setUserGeneratedLists] = useState<
@@ -25,6 +39,13 @@ const App = () => {
 
   const [currentUserGeneratedList, setCurrentUserGeneratedList] =
     useState<UserGeneratedList | null>(null);
+
+  useEffect(() => {
+    const themeSavedLocally = localStorage.getItem("currentTheme");
+    if (themeSavedLocally) {
+      setCurrentTheme(themeSavedLocally);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -75,62 +96,77 @@ const App = () => {
     setCurrentUserGeneratedList(null);
   };
 
+  const toggleTheme = () => {
+    const newTheme = currentTheme === "dark" ? " light" : "dark";
+
+    setCurrentTheme(newTheme);
+    localStorage.setItem("currentTheme", newTheme);
+  };
+
   return (
-    <BrowserRouter>
-      <Container>
-        <UserAuthForm
-          currentUser={currentUser}
-          handleUserChange={handleUserChange}
-        />
+    <ThemeContext.Provider value={{ theme: currentTheme, toggleTheme }}>
+      <ThemeProvider theme={currentTheme === "dark" ? darkTheme : lightTheme}>
+        <CssBaseline />
+        <BrowserRouter>
+          <Container>
+            <UserAuthForm
+              currentUser={currentUser}
+              handleUserChange={handleUserChange}
+            />
 
-        {currentUser && <NavBarTabs />}
+            {currentUser && <NavBarTabs />}
 
-        {currentUser && (
-          <Box sx={{ my: 1 }}>
-            <Routes>
-              <Route
-                path="/newList"
-                element={
-                  <ListGeneratorForm
-                    currentUser={currentUser}
-                    handleSubmit={handleListGeneratorFormSubmit}
-                  />
-                }
-              />
-              <Route
-                path="/history"
-                element={
-                  <>
-                    <GeneratedListsHistory
-                      currentUserGeneratedList={currentUserGeneratedList}
-                      userGeneratedLists={userGeneratedLists}
-                      handleSelectedListChange={handleSelectedListChange}
-                    />
-
-                    <Divider sx={{ mb: 1 }} />
-
-                    {currentUserGeneratedList && (
-                      <UserGeneratedListSection
-                        currentUserGeneratedList={currentUserGeneratedList}
-                        handleDeleteUserGeneratedList={
-                          handleDeleteUserGeneratedList
-                        }
+            {currentUser && (
+              <Box sx={{ my: 1 }}>
+                <Routes>
+                  <Route
+                    path="/newList"
+                    element={
+                      <ListGeneratorForm
+                        currentUser={currentUser}
+                        handleSubmit={handleListGeneratorFormSubmit}
                       />
-                    )}
-                  </>
-                }
-              />
+                    }
+                  />
+                  <Route
+                    path="/history"
+                    element={
+                      <>
+                        <GeneratedListsHistory
+                          currentUserGeneratedList={currentUserGeneratedList}
+                          userGeneratedLists={userGeneratedLists}
+                          handleSelectedListChange={handleSelectedListChange}
+                        />
 
-              <Route
-                path="/settings"
-                element={<Settings currentUser={currentUser} />}
-              />
-              <Route path="*" element={<Navigate to="/newList" replace />} />
-            </Routes>
-          </Box>
-        )}
-      </Container>
-    </BrowserRouter>
+                        <Divider sx={{ mb: 1 }} />
+
+                        {currentUserGeneratedList && (
+                          <UserGeneratedListSection
+                            currentUserGeneratedList={currentUserGeneratedList}
+                            handleDeleteUserGeneratedList={
+                              handleDeleteUserGeneratedList
+                            }
+                          />
+                        )}
+                      </>
+                    }
+                  />
+
+                  <Route
+                    path="/settings"
+                    element={<Settings currentUser={currentUser} />}
+                  />
+                  <Route
+                    path="*"
+                    element={<Navigate to="/newList" replace />}
+                  />
+                </Routes>
+              </Box>
+            )}
+          </Container>
+        </BrowserRouter>
+      </ThemeProvider>
+    </ThemeContext.Provider>
   );
 };
 
