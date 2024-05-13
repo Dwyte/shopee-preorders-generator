@@ -1,5 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+
 // Storage for storing files
 import {
   getStorage,
@@ -9,7 +10,7 @@ import {
   deleteObject,
   getBlob,
 } from "firebase/storage";
-``;
+
 // Firestore for storing JSON Documents like MongoDB
 import {
   getFirestore,
@@ -43,32 +44,49 @@ const storage = getStorage();
 const GENERATED_LISTS_COLLECTION_NAME = "generatedLists";
 const USER_SETTINGS_COLLECTION_NAME = "userSettings";
 
+const generatedListsCollection = collection(
+  db,
+  GENERATED_LISTS_COLLECTION_NAME
+);
+
+/**
+ *
+ * @param user the name of the user
+ * @returns array of the user's generated lists
+ */
 export const getUserGeneratedLists = async (user: string) => {
   try {
-    const docRef = collection(db, GENERATED_LISTS_COLLECTION_NAME);
     const q = query(
-      docRef,
+      generatedListsCollection,
       where("user", "==", user),
       orderBy("datetime", "desc")
     );
-    const snapshots = await getDocs(q);
-    const snapshotsData = snapshots.docs.map((doc) => ({
+
+    const results = await getDocs(q);
+    const resultsData = results.docs.map((doc) => ({
       ...doc.data(),
       id: doc.id,
     })) as UserGeneratedList[];
 
-    return snapshotsData;
+    return resultsData;
   } catch (e) {
+    alert("Something went wrong.");
     console.error("Error getting documents: ", e);
     return [];
   }
 };
 
+/**
+ *
+ * @param user the name of the current user uploading a generated list.
+ * @param generatedList the new generated list to be added to the database
+ * @returns the saved document of the generated list from the database
+ */
 export const addUserGeneratedList = async (
   user: string,
   generatedList: GeneratedList
 ) => {
-  const newDocData = {
+  const newUserGeneratedList = {
     id: "",
     user,
     datetime: Date.now(),
@@ -76,20 +94,25 @@ export const addUserGeneratedList = async (
   };
 
   try {
-    const docRef = await addDoc(
-      collection(db, GENERATED_LISTS_COLLECTION_NAME),
-      newDocData
-    );
+    const newDoc = await addDoc(generatedListsCollection, newUserGeneratedList);
 
-    newDocData.id = docRef.id;
-    console.log("Document written with ID: ", docRef.id);
+    // Get Id, so we can return newUserGeneratedList with the id generated from DB
+    newUserGeneratedList.id = newDoc.id;
+
+    console.log("Document written with ID: ", newDoc.id);
   } catch (e) {
+    alert("Something went wrong.");
     console.error("Error adding document: ", e);
   }
 
-  return newDocData;
+  return newUserGeneratedList;
 };
 
+/**
+ *
+ * @param docId the docId of the userGeneratedList to update/modify
+ * @param newUserGeneratedListDocData the new version of the userGeneratedList after the changes
+ */
 export const updateUserGeneratedList = async (
   docId: string,
   newUserGeneratedListDocData: {}
@@ -97,17 +120,28 @@ export const updateUserGeneratedList = async (
   const docRef = doc(db, GENERATED_LISTS_COLLECTION_NAME, docId);
   await updateDoc(docRef, {
     ...newUserGeneratedListDocData,
+    // Everytime it updates, set a new updateTime
     updateTime: Date.now(),
   });
   console.log("Updated doc", docId);
 };
 
+/**
+ *
+ * @param docId the id of the userGeneratedList to delete
+ */
 export const deleteUserGeneratedList = async (docId: string) => {
   const docRef = doc(db, GENERATED_LISTS_COLLECTION_NAME, docId);
   await deleteDoc(docRef);
   console.log("Deleted doc", docId);
 };
 
+/**
+ *
+ * @param file the file to upload
+ * @param directory where to store the file
+ * @returns the download url
+ */
 export const uploadFile = async (file: File, directory: string) => {
   // Create Storage Reference
   const storageRef = ref(storage, `${directory}/${file.name}`);
@@ -126,6 +160,10 @@ export const uploadFile = async (file: File, directory: string) => {
   return downloadURL;
 };
 
+/**
+ *
+ * @param directory the file directory to delete
+ */
 export const deleteFIle = async (directory: string) => {
   try {
     const storageRef = ref(storage, directory);
@@ -137,6 +175,11 @@ export const deleteFIle = async (directory: string) => {
   }
 };
 
+/**
+ *
+ * @param user the name of user
+ * @returns the user's userSettings
+ */
 export const getUserSettings = async (user: string) => {
   const userSettingsCollectionRef = collection(
     db,
@@ -150,6 +193,12 @@ export const getUserSettings = async (user: string) => {
   return { ...userSettings.data(), id: userSettings.id } as DocumentData;
 };
 
+/**
+ *
+ * @param user the name of the current logged in user
+ * @param files the DTS files to upload
+ * @returns null
+ */
 export const uploadUserDTSFiles = async (user: string, files: File[]) => {
   if (!user || !files) {
     console.error("Invalid arguments: ", user, files);
@@ -179,6 +228,11 @@ export const uploadUserDTSFiles = async (user: string, files: File[]) => {
   console.log("Updated user settings", user, files);
 };
 
+/**
+ *
+ * @param user the current logged in user
+ * @param newValue the new value for hasNewItemsRecently settings
+ */
 export const setUserHasNewItemsRecently = async (
   user: string,
   newValue: boolean
@@ -189,6 +243,11 @@ export const setUserHasNewItemsRecently = async (
   await updateDoc(docRef, { hasNewItemsRecently: newValue });
 };
 
+/**
+ *
+ * @param user the name of the user to download the dts files
+ * @returns array of File object containing the DTS files of the user argument
+ */
 export const downloadUserDTSFiles = async (user: string) => {
   const userSettings = await getUserSettings(user);
   const userDTSFiles = [];
