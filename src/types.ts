@@ -33,3 +33,8 @@ export interface DTSFileMetadata {
 export interface BigSellerOrdersMetadata {
   totalOrders: number;
 }
+
+export interface UploadedFile extends File {
+  downloadURL?: string;
+  metadata?: DTSFileMetadata & BigSellerOrdersMetadata;
+}

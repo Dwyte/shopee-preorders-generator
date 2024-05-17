@@ -1,14 +1,10 @@
 import { Box, Typography } from "@mui/material";
 import ExcelIcon from "../assets/excel-icon.png";
 import { timestampToDatetimeText } from "../scripts";
-import { BigSellerOrdersMetadata, DTSFileMetadata } from "../types";
-
-interface CustomFile extends File {
-  metadata?: DTSFileMetadata & BigSellerOrdersMetadata;
-}
+import { UploadedFile } from "../types";
 
 interface Props {
-  file: CustomFile;
+  file: UploadedFile;
 }
 
 const minimizeFileName = (fileName: string) => {
@@ -20,6 +16,8 @@ const minimizeFileName = (fileName: string) => {
 };
 
 const UploadedFilePreview = ({ file }: Props) => {
+  console.log(file);
+
   return (
     <Box sx={{ display: "flex", px: 1 }}>
       <Box sx={{ py: 1, px: 1 }}>

@@ -9,6 +9,7 @@ import {
   uploadBytesResumable,
   deleteObject,
   getBlob,
+  getMetadata,
 } from "firebase/storage";
 
 // Firestore for storing JSON Documents like MongoDB
@@ -255,11 +256,21 @@ export const downloadUserDTSFiles = async (user: string) => {
   for (let fileDir of userSettings.dtsFiles) {
     try {
       const storageRef = ref(storage, fileDir);
+      const fileMetadata = await getMetadata(storageRef);
+      // const downloadURL = await getDownloadURL(storageRef);
       const fileBlob = await getBlob(storageRef);
       const fileDirSplit = fileDir.split("/");
       const fileName = fileDirSplit[fileDirSplit.length - 1];
+      console.log("OMG", fileMetadata.generation);
+      const dtsFile = new File([fileBlob], fileName, {
+        lastModified: parseInt(
+          fileMetadata.generation.substring(
+            0,
+            fileMetadata.generation.length - 3
+          )
+        ),
+      });
 
-      const dtsFile = new File([fileBlob], fileName);
       userDTSFiles.push(dtsFile);
     } catch (error) {
       console.error(error);
