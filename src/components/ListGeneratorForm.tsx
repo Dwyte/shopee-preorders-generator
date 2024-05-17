@@ -19,10 +19,14 @@ import {
   Skeleton,
   Alert,
   LinearProgress,
+  ToggleButton,
 } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SendSharpIcon from "@mui/icons-material/SendSharp";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import DoneAllOutlinedIcon from "@mui/icons-material/DoneAllOutlined";
+import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
+
 import { useNavigate } from "react-router-dom";
 import InfoIcon from "@mui/icons-material/Info";
 import {
@@ -54,6 +58,7 @@ const ListGeneratorForm = ({
     null
   );
   const [hasNewItemsRecently, setHasNewItemsRecently] = useState(false);
+  const [isNonPreorderIncluded, setIsNonPreorderIncluded] = useState(false);
 
   const dtsFileInputRef = useRef<HTMLInputElement>(null);
   const bigSellerFileInputRef = useRef<HTMLInputElement>(null);
@@ -164,7 +169,8 @@ const ListGeneratorForm = ({
     if (daysToShipFile !== null && bigSellerOrdersFile !== null) {
       const generatedList = await generateListFromFiles(
         daysToShipFile,
-        bigSellerOrdersFile
+        bigSellerOrdersFile,
+        isNonPreorderIncluded
       );
       await uploadUserDTSFiles(currentUser, daysToShipFile);
       handleSubmit(generatedList);
@@ -318,6 +324,19 @@ const ListGeneratorForm = ({
           >
             Reset
           </Button>
+          <ToggleButton
+            color="primary"
+            value={isNonPreorderIncluded}
+            selected={isNonPreorderIncluded}
+            onChange={() => setIsNonPreorderIncluded(!isNonPreorderIncluded)}
+          >
+            {isNonPreorderIncluded ? (
+              <DoneAllOutlinedIcon sx={{ mr: 1 }} />
+            ) : (
+              <ClearOutlinedIcon sx={{ mr: 1 }} />
+            )}
+            Include non-preorder products
+          </ToggleButton>
         </Stack>
       )}
     </form>

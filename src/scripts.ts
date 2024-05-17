@@ -61,7 +61,8 @@ const simplifyGeneratedList = (generatedListMap: GeneratedListMap) => {
 
 export const generateListFromFiles = async (
   daysToShipFiles: File[],
-  bigSellerOrdersFiles: File[]
+  bigSellerOrdersFiles: File[],
+  isNonPreorderIncluded: boolean = false
 ): Promise<GeneratedList> => {
   const preOrderProducts: { [key: string]: any } = {};
 
@@ -92,7 +93,7 @@ export const generateListFromFiles = async (
       const parentSKU: string = row[1];
       const daysToShip: number = parseInt(row[6]);
 
-      if (daysToShip > 2) {
+      if (daysToShip > 2 || isNonPreorderIncluded) {
         preOrderProducts[productName] = parentSKU;
       }
     }
