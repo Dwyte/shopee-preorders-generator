@@ -19,7 +19,7 @@ const GeneratedListsHistory = (props: PropType) => {
   console.log(props.currentUserGeneratedList);
 
   return (
-    <FormControl fullWidth size="small" sx={{ my: 1 }}>
+    <FormControl fullWidth size="small" sx={{ mt: 2, mb: 1 }}>
       <InputLabel id="demo-simple-select-label">{label}</InputLabel>
       <Select
         labelId="demo-simple-select-label"

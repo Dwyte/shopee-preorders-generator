@@ -1,4 +1,4 @@
-import { Box, Container, Divider, SelectChangeEvent } from "@mui/material";
+import { Box, Container, Paper, SelectChangeEvent } from "@mui/material";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -108,61 +108,63 @@ const App = () => {
       <ThemeProvider theme={currentTheme === "dark" ? darkTheme : lightTheme}>
         <CssBaseline />
         <BrowserRouter>
-          <Container>
-            <UserAuthForm
-              currentUser={currentUser}
-              handleUserChange={handleUserChange}
-            />
+          <Container maxWidth="md" sx={{ my: 2 }}>
+            <Paper sx={{ p: 2 }} elevation={1}>
+              <UserAuthForm
+                currentUser={currentUser}
+                handleUserChange={handleUserChange}
+              />
 
-            {currentUser && <NavBarTabs />}
+              {currentUser && <NavBarTabs />}
 
-            {currentUser && (
-              <Box sx={{ my: 1 }}>
-                <Routes>
-                  <Route
-                    path="/newList"
-                    element={
-                      <ListGeneratorForm
-                        currentUser={currentUser}
-                        handleSubmit={handleListGeneratorFormSubmit}
-                      />
-                    }
-                  />
-                  <Route
-                    path="/history"
-                    element={
-                      <>
-                        <GeneratedListsHistory
-                          currentUserGeneratedList={currentUserGeneratedList}
-                          userGeneratedLists={userGeneratedLists}
-                          handleSelectedListChange={handleSelectedListChange}
+              {currentUser && (
+                <Box sx={{ my: 1 }}>
+                  <Routes>
+                    <Route
+                      path="/newList"
+                      element={
+                        <ListGeneratorForm
+                          currentUser={currentUser}
+                          handleSubmit={handleListGeneratorFormSubmit}
                         />
-
-                        <Divider sx={{ mb: 1 }} />
-
-                        {currentUserGeneratedList && (
-                          <UserGeneratedListSection
+                      }
+                    />
+                    <Route
+                      path="/history"
+                      element={
+                        <>
+                          <GeneratedListsHistory
                             currentUserGeneratedList={currentUserGeneratedList}
-                            handleDeleteUserGeneratedList={
-                              handleDeleteUserGeneratedList
-                            }
+                            userGeneratedLists={userGeneratedLists}
+                            handleSelectedListChange={handleSelectedListChange}
                           />
-                        )}
-                      </>
-                    }
-                  />
 
-                  <Route
-                    path="/settings"
-                    element={<Settings currentUser={currentUser} />}
-                  />
-                  <Route
-                    path="*"
-                    element={<Navigate to="/newList" replace />}
-                  />
-                </Routes>
-              </Box>
-            )}
+                          {currentUserGeneratedList && (
+                            <UserGeneratedListSection
+                              currentUserGeneratedList={
+                                currentUserGeneratedList
+                              }
+                              handleDeleteUserGeneratedList={
+                                handleDeleteUserGeneratedList
+                              }
+                            />
+                          )}
+                        </>
+                      }
+                    />
+
+                    <Route
+                      path="/settings"
+                      element={<Settings currentUser={currentUser} />}
+                    />
+                    <Route
+                      path="*"
+                      element={<Navigate to="/newList" replace />}
+                    />
+                  </Routes>
+                </Box>
+              )}
+            </Paper>
           </Container>
         </BrowserRouter>
       </ThemeProvider>

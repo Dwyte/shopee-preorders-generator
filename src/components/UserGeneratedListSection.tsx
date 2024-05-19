@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Divider,
   IconButton,
   Snackbar,
   Stack,
@@ -163,7 +162,7 @@ const UserGeneratedListSection = (props: PropType) => {
             "Saving changes..."
           ) : (
             <>
-              Last Edited:
+              Last Edited:{" "}
               {props.currentUserGeneratedList.updateTime
                 ? timestampToDatetimeText(
                     props.currentUserGeneratedList.updateTime
@@ -192,12 +191,10 @@ const UserGeneratedListSection = (props: PropType) => {
             onClick={handleCopyList}
             startIcon={<CopyAllIcon />}
           >
-            Copy List
+            Copy All
           </Button>
         </Stack>
       </Box>
-
-      <Divider sx={{ mb: 2 }} />
 
       {sortedGeneratedList.map((supplierCode, index) => (
         <UserGeneratedListItem

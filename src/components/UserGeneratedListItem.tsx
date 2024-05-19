@@ -1,10 +1,10 @@
 import {
   Box,
   Button,
-  Card,
-  Divider,
   TextareaAutosize as BaseTextareAutosize,
   Typography,
+  Paper,
+  Grid,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { styled } from "@mui/system";
@@ -92,30 +92,37 @@ const UserGeneratedListItem = ({
   };
 
   return (
-    <Card sx={{ my: 1 }}>
-      <Box sx={{ p: 2 }}>
-        <Typography component="h1">
-          <SupplierName supplierCode={supplierCode} />
-        </Typography>
-      </Box>
-      <Divider />
-      <Box sx={{ p: 2 }}>
+    <Paper sx={{ my: 2 }} variant="outlined">
+      <Grid
+        container
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ px: 2, pt: 2 }}
+      >
+        <Grid item>
+          <Typography component="h1">
+            <SupplierName supplierCode={supplierCode} />
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Button
+            onClick={handleCopyToClipboard}
+            startIcon={<ContentCopyIcon />}
+            color={"primary"}
+            variant="outlined"
+          >
+            Copy
+          </Button>
+        </Grid>
+      </Grid>
+      <Box sx={{ px: 2, py: 2 }}>
         <TextareaAutosize
           sx={{ width: "100%" }}
           value={productsToOrderText}
           onChange={handleTextAreChange}
         />
-        <Button
-          sx={{ mt: 1 }}
-          onClick={handleCopyToClipboard}
-          startIcon={<ContentCopyIcon />}
-          color={"primary"}
-          variant={"outlined"}
-        >
-          Copy to Clipboard
-        </Button>
       </Box>
-    </Card>
+    </Paper>
   );
 };
 
