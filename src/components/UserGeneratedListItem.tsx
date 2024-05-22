@@ -5,10 +5,16 @@ import {
   Typography,
   Paper,
   Grid,
+  Collapse,
+  IconButton,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { styled } from "@mui/system";
 import SupplierName from "./SupplierName";
+import { useState } from "react";
+
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 const blue = {
   100: "#DAECFF",
@@ -80,6 +86,8 @@ const UserGeneratedListItem = ({
   onCopy,
   onProductsToOrderTextChange,
 }: Props) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(productsToOrderText);
     onCopy();
@@ -97,31 +105,43 @@ const UserGeneratedListItem = ({
         container
         alignItems="center"
         justifyContent="space-between"
-        sx={{ px: 2, pt: 2 }}
+        sx={{ px: 2, py: 2 }}
       >
         <Grid item>
-          <Typography component="h1">
+          <Typography component="h1" sx={{ p: 1 }}>
             <SupplierName supplierCode={supplierCode} />
           </Typography>
         </Grid>
         <Grid item>
-          <Button
+          <IconButton
             onClick={handleCopyToClipboard}
-            startIcon={<ContentCopyIcon />}
-            color={"primary"}
-            variant="outlined"
+            color="primary"
+            size="medium"
           >
-            Copy
-          </Button>
+            <ContentCopyIcon fontSize="small" />
+          </IconButton>{" "}
+          <IconButton
+            onClick={() => setIsExpanded(!isExpanded)}
+            color="default"
+            size="medium"
+          >
+            {isExpanded ? (
+              <ExpandLessIcon fontSize="small" />
+            ) : (
+              <ExpandMoreIcon fontSize="small" />
+            )}
+          </IconButton>
         </Grid>
       </Grid>
-      <Box sx={{ px: 2, py: 2 }}>
-        <TextareaAutosize
-          sx={{ width: "100%" }}
-          value={productsToOrderText}
-          onChange={handleTextAreChange}
-        />
-      </Box>
+      <Collapse in={isExpanded}>
+        <Box>
+          <TextareaAutosize
+            sx={{ width: "100%", mb: -1 }}
+            value={productsToOrderText}
+            onChange={handleTextAreChange}
+          />
+        </Box>
+      </Collapse>
     </Paper>
   );
 };
