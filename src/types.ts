@@ -42,7 +42,7 @@ export interface UploadedFile extends File {
 export interface UserSettings {
   id: string;
   user: string;
-  parentSKUMapping: { [key: string]: string };
+  supplierCodeMapping?: { [key: string]: string };
   dtsFiles: string[];
   hasNewItemsRecently?: boolean;
 }

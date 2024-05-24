@@ -20,6 +20,7 @@ import Settings from "./components/Settings";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import ThemeContext from "./contexts/ThemeContext";
+import UserSettingsContext from "./contexts/UserSettingsContext";
 
 const darkTheme = createTheme({
   palette: {
@@ -122,71 +123,75 @@ const App = () => {
 
   return (
     <ThemeContext.Provider value={{ theme: currentTheme, toggleTheme }}>
-      <ThemeProvider theme={currentTheme === "dark" ? darkTheme : lightTheme}>
-        <CssBaseline />
-        <Container maxWidth="md" sx={{ my: 2 }}>
-          <Paper sx={{ p: 2 }} elevation={1}>
-            <UserAuthForm
-              currentUser={currentUser}
-              handleUserChange={handleUserChange}
-            />
+      <UserSettingsContext.Provider value={userSettings}>
+        <ThemeProvider theme={currentTheme === "dark" ? darkTheme : lightTheme}>
+          <CssBaseline />
+          <Container maxWidth="md" sx={{ my: 2 }}>
+            <Paper sx={{ p: 2 }} elevation={1}>
+              <UserAuthForm
+                currentUser={currentUser}
+                handleUserChange={handleUserChange}
+              />
 
-            {currentUser && <NavBarTabs />}
+              {currentUser && <NavBarTabs />}
 
-            {currentUser && (
-              <Box sx={{ my: 1 }}>
-                <Routes>
-                  <Route
-                    path="/newList"
-                    element={
-                      <ListGeneratorForm
-                        currentUser={currentUser}
-                        handleSubmit={handleListGeneratorFormSubmit}
-                      />
-                    }
-                  />
-                  <Route
-                    path="/history"
-                    element={
-                      <>
-                        <GeneratedListsHistory
-                          currentUserGeneratedList={currentUserGeneratedList}
-                          userGeneratedLists={userGeneratedLists}
-                          handleSelectedListChange={handleSelectedListChange}
+              {currentUser && (
+                <Box sx={{ my: 1 }}>
+                  <Routes>
+                    <Route
+                      path="/newList"
+                      element={
+                        <ListGeneratorForm
+                          currentUser={currentUser}
+                          handleSubmit={handleListGeneratorFormSubmit}
                         />
-
-                        {currentUserGeneratedList && (
-                          <UserGeneratedListSection
+                      }
+                    />
+                    <Route
+                      path="/history"
+                      element={
+                        <>
+                          <GeneratedListsHistory
                             currentUserGeneratedList={currentUserGeneratedList}
-                            handleDeleteUserGeneratedList={
-                              handleDeleteUserGeneratedList
-                            }
+                            userGeneratedLists={userGeneratedLists}
+                            handleSelectedListChange={handleSelectedListChange}
                           />
-                        )}
-                      </>
-                    }
-                  />
 
-                  <Route
-                    path="/settings"
-                    element={
-                      <Settings
-                        userSettings={userSettings}
-                        setUserSettings={setUserSettings}
-                      />
-                    }
-                  />
+                          {currentUserGeneratedList && (
+                            <UserGeneratedListSection
+                              currentUserGeneratedList={
+                                currentUserGeneratedList
+                              }
+                              handleDeleteUserGeneratedList={
+                                handleDeleteUserGeneratedList
+                              }
+                            />
+                          )}
+                        </>
+                      }
+                    />
 
-                  <Route
-                    path="*"
-                    element={<Navigate to="/newList" replace />}
-                  />
-                </Routes>
-              </Box>
-            )}
-          </Paper>
-        </Container>
-      </ThemeProvider>
+                    <Route
+                      path="/settings"
+                      element={
+                        <Settings
+                          userSettings={userSettings}
+                          setUserSettings={setUserSettings}
+                        />
+                      }
+                    />
+
+                    <Route
+                      path="*"
+                      element={<Navigate to="/newList" replace />}
+                    />
+                  </Routes>
+                </Box>
+              )}
+            </Paper>
+          </Container>
+        </ThemeProvider>
+      </UserSettingsContext.Provider>
     </ThemeContext.Provider>
   );
 };
