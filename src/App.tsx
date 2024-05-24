@@ -12,8 +12,9 @@ import {
   addUserGeneratedList,
   deleteUserGeneratedList,
   getUserGeneratedLists,
+  getUserSettings,
 } from "./api";
-import { GeneratedList, UserGeneratedList } from "./types";
+import { GeneratedList, UserGeneratedList, UserSettings } from "./types";
 import Settings from "./components/Settings";
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -32,6 +33,7 @@ const App = () => {
   const [currentTheme, setCurrentTheme] = useState("dark");
 
   const [currentUser, setUser] = useState<string>("");
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
 
   const [userGeneratedLists, setUserGeneratedLists] = useState<
     UserGeneratedList[]
@@ -39,6 +41,15 @@ const App = () => {
 
   const [currentUserGeneratedList, setCurrentUserGeneratedList] =
     useState<UserGeneratedList | null>(null);
+
+  useEffect(() => {
+    const initializeUserSettings = async () => {
+      const userSettings = await getUserSettings(currentUser);
+      setUserSettings(userSettings);
+    };
+
+    initializeUserSettings();
+  }, [currentUser]);
 
   useEffect(() => {
     const themeSavedLocally = localStorage.getItem("currentTheme");
@@ -158,8 +169,14 @@ const App = () => {
 
                   <Route
                     path="/settings"
-                    element={<Settings currentUser={currentUser} />}
+                    element={
+                      <Settings
+                        userSettings={userSettings}
+                        setUserSettings={setUserSettings}
+                      />
+                    }
                   />
+
                   <Route
                     path="*"
                     element={<Navigate to="/newList" replace />}

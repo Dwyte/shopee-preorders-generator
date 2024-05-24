@@ -38,3 +38,11 @@ export interface UploadedFile extends File {
   downloadURL?: string;
   metadata?: DTSFileMetadata & BigSellerOrdersMetadata;
 }
+
+export interface UserSettings {
+  id: string;
+  user: string;
+  parentSKUMapping: { [key: string]: string };
+  dtsFiles: string[];
+  hasNewItemsRecently?: boolean;
+}

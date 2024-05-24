@@ -24,9 +24,8 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  DocumentData,
 } from "firebase/firestore";
-import { GeneratedList, UserGeneratedList } from "./types";
+import { GeneratedList, UserGeneratedList, UserSettings } from "./types";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -191,7 +190,7 @@ export const getUserSettings = async (user: string) => {
   const userSettings = (await getDocs(q)).docs[0];
 
   // HOT FIX
-  return { ...userSettings.data(), id: userSettings.id } as DocumentData;
+  return { ...userSettings.data(), id: userSettings.id } as UserSettings;
 };
 
 /**
