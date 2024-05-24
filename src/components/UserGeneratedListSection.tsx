@@ -93,8 +93,6 @@ const UserGeneratedListSection = (props: PropType) => {
 
     setUnsavedChanges(newUnsavedChanges);
 
-    setUnsavedChanges;
-
     const handleSaveChanges = async () => {
       await updateUserGeneratedList(
         props.currentUserGeneratedList.id,
@@ -102,7 +100,7 @@ const UserGeneratedListSection = (props: PropType) => {
       );
 
       console.log(newUnsavedChanges);
-
+      setUnsavedChanges(null);
       setHasUnsavedChanges(false);
       showSnackBar("Changes saved successfully.");
     };

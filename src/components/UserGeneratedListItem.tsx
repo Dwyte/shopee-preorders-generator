@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   TextareaAutosize as BaseTextareAutosize,
   Typography,
   Paper,
