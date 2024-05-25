@@ -1,8 +1,9 @@
 import { Divider, Stack, Switch, Typography } from "@mui/material";
-import { getUserSettings, setUserHasNewItemsRecently } from "../api";
+import { setUserHasNewItemsRecently } from "../api";
 import { Dispatch, SetStateAction, useContext } from "react";
 import ThemeContext from "../contexts/ThemeContext";
 import { UserSettings } from "../types";
+import SupplierCodeMapping from "./SupplierCodeMappingForm";
 
 type Props = {
   userSettings: UserSettings | null;
@@ -52,6 +53,9 @@ const Settings = ({ userSettings, setUserSettings }: Props) => {
         <Typography variant="subtitle1">
           Turn on for Dark mode, off for Light Mode.
         </Typography>
+
+        <Divider sx={{ mt: 1 }} />
+        <SupplierCodeMapping />
       </div>
     )
   );
