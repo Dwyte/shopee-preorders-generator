@@ -123,7 +123,7 @@ const App = () => {
 
   return (
     <ThemeContext.Provider value={{ theme: currentTheme, toggleTheme }}>
-      <UserSettingsContext.Provider value={userSettings}>
+      <UserSettingsContext.Provider value={{ userSettings, setUserSettings }}>
         <ThemeProvider theme={currentTheme === "dark" ? darkTheme : lightTheme}>
           <CssBaseline />
           <Container maxWidth="md" sx={{ my: 2 }}>
@@ -171,15 +171,7 @@ const App = () => {
                       }
                     />
 
-                    <Route
-                      path="/settings"
-                      element={
-                        <Settings
-                          userSettings={userSettings}
-                          setUserSettings={setUserSettings}
-                        />
-                      }
-                    />
+                    <Route path="/settings" element={<Settings />} />
 
                     <Route
                       path="*"

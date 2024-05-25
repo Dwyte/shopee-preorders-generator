@@ -23,7 +23,7 @@ const stallColors = {
 };
 
 const SupplierName = ({ supplierCode }: { supplierCode: string }) => {
-  const userSettings = useContext(UserSettingsContext);
+  const { userSettings } = useContext(UserSettingsContext);
 
   let mappedSupplierCode = supplierCode;
 

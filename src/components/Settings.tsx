@@ -1,16 +1,13 @@
 import { Divider, Stack, Switch, Typography } from "@mui/material";
 import { setUserHasNewItemsRecently } from "../api";
-import { Dispatch, SetStateAction, useContext } from "react";
+import { useContext } from "react";
 import ThemeContext from "../contexts/ThemeContext";
-import { UserSettings } from "../types";
 import SupplierCodeMapping from "./SupplierCodeMappingForm";
+import UserSettingsContext from "../contexts/UserSettingsContext";
 
-type Props = {
-  userSettings: UserSettings | null;
-  setUserSettings: Dispatch<SetStateAction<UserSettings | null>>;
-};
+const Settings = () => {
+  const { userSettings, setUserSettings } = useContext(UserSettingsContext);
 
-const Settings = ({ userSettings, setUserSettings }: Props) => {
   const { theme, toggleTheme } = useContext(ThemeContext);
 
   const toggleHasNewItemsRecently = () => {
