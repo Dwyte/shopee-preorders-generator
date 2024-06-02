@@ -123,7 +123,9 @@ const App = () => {
 
   return (
     <ThemeContext.Provider value={{ theme: currentTheme, toggleTheme }}>
-      <UserSettingsContext.Provider value={{ userSettings, setUserSettings }}>
+      <UserSettingsContext.Provider
+        value={{ currentUser, userSettings, setUserSettings }}
+      >
         <ThemeProvider theme={currentTheme === "dark" ? darkTheme : lightTheme}>
           <CssBaseline />
           <Container maxWidth="md" sx={{ my: 2 }}>

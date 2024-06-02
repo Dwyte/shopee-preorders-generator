@@ -22,38 +22,43 @@ const Settings = () => {
 
   return (
     userSettings && (
-      <div>
-        <Stack direction="row" alignItems="center">
-          <Typography sx={{ flex: 1 }} fontWeight="bold" variant="h6">
-            Enable New DTS Info file Reminder
+      <Stack direction="column" spacing={1}>
+        <div>
+          <Stack direction="row" alignItems="center">
+            <Typography sx={{ flex: 1 }} fontWeight="bold" variant="h6">
+              Enable New DTS Info file Reminder
+            </Typography>
+
+            <Switch
+              checked={userSettings.hasNewItemsRecently}
+              onChange={toggleHasNewItemsRecently}
+            />
+          </Stack>
+          <Typography variant="subtitle1">
+            Enable this if you recently uploaded new products. This will show an
+            reminder to generate a new one DTS file fro m Shopee. This will be
+            automatically disabled once a new DTS file has been used.
           </Typography>
+        </div>
 
-          <Switch
-            checked={userSettings.hasNewItemsRecently}
-            onChange={toggleHasNewItemsRecently}
-          />
-        </Stack>
-        <Typography variant="subtitle1">
-          Enable this if you recently uploaded new products. This will show an
-          reminder to generate a new one DTS file fro m Shopee. This will be
-          automatically disabled once a new DTS file has been used.
-        </Typography>
-        <Divider sx={{ mt: 1 }} />
+        <Divider />
 
-        <Stack direction="row" alignItems="center">
-          <Typography sx={{ flex: 1 }} fontWeight="bold" variant="h6">
-            Dark Mode
+        <div>
+          <Stack direction="row" alignItems="center">
+            <Typography sx={{ flex: 1 }} fontWeight="bold" variant="h6">
+              Dark Mode
+            </Typography>
+
+            <Switch checked={theme === "dark"} onChange={toggleTheme} />
+          </Stack>
+          <Typography variant="subtitle1">
+            Turn on for Dark mode, off for Light Mode.
           </Typography>
+        </div>
 
-          <Switch checked={theme === "dark"} onChange={toggleTheme} />
-        </Stack>
-        <Typography variant="subtitle1">
-          Turn on for Dark mode, off for Light Mode.
-        </Typography>
-
-        <Divider sx={{ mt: 1 }} />
+        <Divider />
         <SupplierCodeMapping />
-      </div>
+      </Stack>
     )
   );
 };

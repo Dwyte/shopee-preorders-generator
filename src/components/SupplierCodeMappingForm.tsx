@@ -7,10 +7,14 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import SaveIcon from "@mui/icons-material/Save";
+import EditIcon from "@mui/icons-material/Edit";
+import EditOff from "@mui/icons-material/EditOff";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import React, { useContext, useEffect, useState } from "react";
 import UserSettingsContext from "../contexts/UserSettingsContext";
 import { UserSettings } from "../types";
+import { updateSupplierCodeMapping } from "../api";
 
 type SupplierCodeMapProps = {
   parentSKU: string;
@@ -22,6 +26,7 @@ type SupplierCodeMapProps = {
     HTMLInputElement | HTMLTextAreaElement
   >;
   onDelete: () => void;
+  disabled: boolean;
 };
 
 const SupplierCodeMap = ({
@@ -30,6 +35,7 @@ const SupplierCodeMap = ({
   onParentSKUChange,
   onValueChange,
   onDelete,
+  disabled = true,
 }: SupplierCodeMapProps) => {
   return (
     <Stack direction="row" spacing={2} alignItems="center" sx={{ my: 1 }}>
@@ -40,6 +46,7 @@ const SupplierCodeMap = ({
         label="Parent SKU"
         value={parentSKU}
         onChange={onParentSKUChange}
+        disabled={disabled}
       />
       <KeyboardDoubleArrowRightIcon />
       <TextField
@@ -49,8 +56,9 @@ const SupplierCodeMap = ({
         size="small"
         value={value}
         onChange={onValueChange}
+        disabled={disabled}
       />
-      <IconButton color="error" onClick={onDelete}>
+      <IconButton color="error" onClick={onDelete} disabled={disabled}>
         <DeleteIcon />
       </IconButton>
     </Stack>
@@ -58,14 +66,21 @@ const SupplierCodeMap = ({
 };
 
 const SupplierCodeMapping = () => {
-  const { userSettings, setUserSettings } = useContext(UserSettingsContext);
+  const { currentUser, userSettings, setUserSettings } =
+    useContext(UserSettingsContext);
+
+  const [userSettingsBeforeEdit, setUserSettingsBeforeEdit] =
+    useState<UserSettings | null>(null);
+
   const [parentSKUOrder, setParentSKUOrder] = useState<string[]>([]);
+
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (userSettings?.supplierCodeMapping) {
       setParentSKUOrder(Object.keys(userSettings.supplierCodeMapping));
     }
-  }, [userSettings?.user]);
+  }, [userSettings?.user, isEditing]);
 
   const handleParentSKUChange =
     (parentSKU: string) =>
@@ -154,22 +169,83 @@ const SupplierCodeMapping = () => {
     setParentSKUOrder((prev) => prev.filter((v) => v !== parentSKU));
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+    setUserSettingsBeforeEdit(userSettings);
+  };
+
+  const handleDiscard = () => {
+    setIsEditing(false);
+    setUserSettings(userSettingsBeforeEdit);
+  };
+
+  const handleSave = async () => {
+    setIsEditing(false);
+
+    if (userSettings?.supplierCodeMapping) {
+      await updateSupplierCodeMapping(
+        currentUser,
+        userSettings?.supplierCodeMapping
+      );
+    }
+
+    setUserSettingsBeforeEdit(null);
+  };
+
   const hasEmptyMapping =
     userSettings?.supplierCodeMapping &&
     "" in userSettings?.supplierCodeMapping;
 
   return (
-    <div>
-      <Typography fontWeight="bold" variant="h6">
-        Parent SKU Mapping
-      </Typography>
+    <Stack direction="column" spacing={1}>
+      <Stack direction="row" alignItems="center">
+        <Typography sx={{ flex: 1 }} fontWeight="bold" variant="h6">
+          Parent SKU Mapping
+        </Typography>
+
+        {!isEditing && (
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<EditIcon />}
+            onClick={handleEdit}
+          >
+            Edit
+          </Button>
+        )}
+
+        {isEditing && (
+          <Stack spacing={1} direction="row">
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<EditOff />}
+              onClick={handleDiscard}
+              color="error"
+            >
+              Discard
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<SaveIcon />}
+              onClick={handleSave}
+              color="success"
+              disabled={hasEmptyMapping}
+            >
+              Save
+            </Button>
+          </Stack>
+        )}
+      </Stack>
+
       <Typography variant="subtitle1">
         Create mappings for your parent SKUs to display them more descriptively
         on the generated lists. <br /> Example: A1 ➡ ABC Shop Orange #69. Start
         by adding a new mapping.
       </Typography>
 
-      <Stack direction="column" spacing={2} alignItems="stretch" sx={{ my: 2 }}>
+      <Stack direction="column" spacing={2} alignItems="stretch">
         {parentSKUOrder.length ? (
           parentSKUOrder.map((parentSKU) => {
             const value = userSettings?.supplierCodeMapping
@@ -183,6 +259,7 @@ const SupplierCodeMapping = () => {
                 onParentSKUChange={handleParentSKUChange(parentSKU)}
                 onValueChange={handleValueChange(parentSKU)}
                 onDelete={handleDelete(parentSKU)}
+                disabled={!isEditing}
               />
             );
           })
@@ -191,16 +268,18 @@ const SupplierCodeMapping = () => {
         )}
       </Stack>
 
-      <Button
-        fullWidth
-        variant="contained"
-        startIcon={<AddIcon />}
-        onClick={handleAddMapping}
-        disabled={hasEmptyMapping}
-      >
-        Add Mapping
-      </Button>
-    </div>
+      {isEditing && (
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAddMapping}
+          disabled={hasEmptyMapping}
+        >
+          Add Mapping
+        </Button>
+      )}
+    </Stack>
   );
 };
 

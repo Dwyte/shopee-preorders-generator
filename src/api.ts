@@ -243,6 +243,15 @@ export const setUserHasNewItemsRecently = async (
   await updateDoc(docRef, { hasNewItemsRecently: newValue });
 };
 
+export const updateSupplierCodeMapping = async (
+  user: string,
+  newSupplierCodeMapping: { [key: string]: string }
+) => {
+  const userSettings = await getUserSettings(user);
+  const docRef = doc(db, USER_SETTINGS_COLLECTION_NAME, userSettings.id);
+  await updateDoc(docRef, { supplierCodeMapping: newSupplierCodeMapping });
+};
+
 /**
  *
  * @param user the name of the user to download the dts files
