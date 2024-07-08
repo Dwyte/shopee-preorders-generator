@@ -45,4 +45,5 @@ export interface UserSettings {
   supplierCodeMapping?: { [key: string]: string };
   dtsFiles: string[];
   hasNewItemsRecently?: boolean;
+  bigSellerCookie: string;
 }

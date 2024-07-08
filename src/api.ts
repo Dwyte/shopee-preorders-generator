@@ -252,8 +252,16 @@ export const updateSupplierCodeMapping = async (
   await updateDoc(docRef, { supplierCodeMapping: newSupplierCodeMapping });
 };
 
+export const updateUserBigSellerCookie = async (
+  user: string,
+  newBigSellerCookie: string
+) => {
+  const userSettings = await getUserSettings(user);
+  const docRef = doc(db, USER_SETTINGS_COLLECTION_NAME, userSettings.id);
+  await updateDoc(docRef, { bigSellerCookie: newBigSellerCookie });
+};
+
 /**
- *
  * @param user the name of the user to download the dts files
  * @returns array of File object containing the DTS files of the user argument
  */

@@ -4,10 +4,10 @@ import { useContext } from "react";
 import ThemeContext from "../contexts/ThemeContext";
 import SupplierCodeMapping from "./SupplierCodeMappingForm";
 import UserSettingsContext from "../contexts/UserSettingsContext";
+import BigSellerCookieForm from "./BigSellerCookieForm";
 
 const Settings = () => {
   const { userSettings, setUserSettings } = useContext(UserSettingsContext);
-
   const { theme, toggleTheme } = useContext(ThemeContext);
 
   const toggleHasNewItemsRecently = () => {
@@ -55,6 +55,9 @@ const Settings = () => {
             Turn on for Dark mode, off for Light Mode.
           </Typography>
         </div>
+        <Divider />
+
+        <BigSellerCookieForm />
 
         <Divider />
         <SupplierCodeMapping />
