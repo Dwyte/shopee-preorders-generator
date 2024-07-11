@@ -1,12 +1,15 @@
 import axios from "axios";
 
+type ENV = "dev" | "prod";
 const endpoints = {
-  local: "http://localhost:3000",
-  render: "https://shopee-preorders-generator.onrender.com",
+  dev: "http://localhost:3000",
+  prod: "/bigSeller",
 };
 
+const CURRENT_ENV = (import.meta.env.VITE_ENVIRONMENT || "dev") as ENV;
+
 export const getNewOrders = async (cookie: string) => {
-  const proxyURL = endpoints["render"] + "/orders";
+  const proxyURL = endpoints[CURRENT_ENV] + "/orders";
 
   const response = await axios.get(proxyURL, {
     headers: { "X-Bigseller-Cookie": cookie },
@@ -21,7 +24,7 @@ export const updateOrderNote = async (
   newOrderNote: string,
   cookie: string
 ) => {
-  const proxyURL = endpoints["render"] + "/orderNote";
+  const proxyURL = endpoints[CURRENT_ENV] + "/orderNote";
 
   const requestBody = { orderId, newOrderNote };
 
