@@ -1,9 +1,12 @@
 import axios from "axios";
 
-const proxyServerEndpoint = "http://localhost:3000";
+const endpoints = {
+  local: "http://localhost:3000",
+  render: "https://shopee-preorders-generator.onrender.com",
+};
 
 export const getNewOrders = async (cookie: string) => {
-  const proxyURL = proxyServerEndpoint + "/orders";
+  const proxyURL = endpoints["render"] + "/orders";
 
   const response = await axios.get(proxyURL, {
     headers: { "X-Bigseller-Cookie": cookie },
@@ -18,7 +21,7 @@ export const updateOrderNote = async (
   newOrderNote: string,
   cookie: string
 ) => {
-  const proxyURL = proxyServerEndpoint + "/orderNote";
+  const proxyURL = endpoints["render"] + "/orderNote";
 
   const requestBody = { orderId, newOrderNote };
 
