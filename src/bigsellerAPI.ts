@@ -1,21 +1,14 @@
 import axios from "axios";
 
-const GET_ORDERS_URL =
-  "https://www.bigseller.com/api/v1/order/new/pageList.json";
-
-const EDIT_ORDER_NOTE =
-  "https://www.bigseller.com/api/v1/order/sign/edit/remark.json";
+const proxyServerEndpoint = "http://localhost:3000";
 
 export const getNewOrders = async (cookie: string) => {
-  const response = await axios.post(
-    GET_ORDERS_URL,
-    {
-      status: "new",
-      packState: "0",
-      pageNo: 1,
-    },
-    { headers: { cookie } }
-  );
+  const proxyURL = proxyServerEndpoint + "/orders";
+
+  const response = await axios.get(proxyURL, {
+    headers: { "X-Bigseller-Cookie": cookie },
+  });
+
   console.log(response.data);
   return response.data;
 };
@@ -25,18 +18,17 @@ export const updateOrderNote = async (
   newOrderNote: string,
   cookie: string
 ) => {
-  const formData = new FormData();
-  formData.append("orderId", orderId);
-  formData.append("remarkType", "1");
-  formData.append("content", newOrderNote);
-  formData.append("orderNotApproved", "false");
+  const proxyURL = proxyServerEndpoint + "/orderNote";
 
-  const response = await axios.post(EDIT_ORDER_NOTE, formData, {
+  const requestBody = { orderId, newOrderNote };
+
+  const response = await axios.post(proxyURL, requestBody, {
     headers: {
-      "Content-Type": "multipart/form-data",
-      cookie: cookie,
+      "X-Bigseller-Cookie": cookie,
     },
   });
+
+  console.log(response.data);
 
   return response.data;
 };
@@ -71,11 +63,11 @@ export const parseMinerList = (minerListText: string) => {
         });
       }
 
-      currentCode = upperCasedLine.replace("CODE:", "").trim();
+      currentCode = upperCasedLine.replace("CODE:", "").trim().split(" ")[0];
       currentCodeMiners = [];
+    } else {
+      currentCodeMiners.push(currentLine);
     }
-
-    currentCodeMiners.push(currentLine);
   }
 
   // When the loop ends, the last current code and miners are not
