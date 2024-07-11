@@ -1,6 +1,11 @@
 import express from "express";
 import cors from "cors";
 import axios from "axios";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,8 +24,7 @@ app.use(
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Example route
-app.get("/orders", async (req, res) => {
+app.get("/bigSeller/orders", async (req, res) => {
   const cookie = req.header("X-Bigseller-Cookie");
 
   const response = await axios.post(
@@ -40,7 +44,7 @@ app.get("/orders", async (req, res) => {
   return res.send(response.data);
 });
 
-app.post("/orderNote", async (req, res) => {
+app.post("/bigSeller/orderNote", async (req, res) => {
   const cookie = req.header("X-Bigseller-Cookie");
 
   const formData = new FormData();
@@ -59,6 +63,14 @@ app.post("/orderNote", async (req, res) => {
   });
 
   return res.send(response.data);
+});
+
+// Serve the static files from the React app
+app.use(express.static(path.join(__dirname, "dist")));
+
+// Handles any requests that don't match the ones above
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
 // Start the server
