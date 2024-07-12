@@ -1,8 +1,10 @@
 import {
+  Alert,
   Box,
   Button,
   FormControl,
   InputLabel,
+  LinearProgress,
   MenuItem,
   Select,
   Stack,
@@ -15,13 +17,26 @@ import { getNewOrders, parseMinerList, updateOrderNote } from "../bigsellerAPI";
 import { useContext, useState } from "react";
 import UserSettingsContext from "../contexts/UserSettingsContext";
 
+enum LiveNotesState {
+  Initial,
+  Loading,
+  Done,
+}
+
 const LiveNotes = () => {
   const label = "Select Date";
   const [minersListText, setMinersListText] = useState("");
   const [progressText, setProgressText] = useState("");
+  const [currentState, setCurrentState] = useState<LiveNotesState>(
+    LiveNotesState.Initial
+  );
+  const [progress, setProgress] = useState(0);
   const { userSettings } = useContext(UserSettingsContext);
 
   const handleSendNotesToBigSeller = async () => {
+    setCurrentState(LiveNotesState.Loading);
+    setProgress(0);
+
     const COOKIE = userSettings?.bigSellerCookie || "";
 
     const newOrdersResponse = await getNewOrders(COOKIE);
@@ -31,38 +46,51 @@ const LiveNotes = () => {
     }
 
     const newOrders = newOrdersResponse.data.page.rows;
-    let minerHasCheckoutCount = 0;
+    let ordersNoMinerCodeCount = 0;
+    const uniqueMiners = new Set();
+
     const parsedMinerList = parseMinerList(minersListText);
-    for (let order of newOrders) {
+    for (let i = 0; i < newOrders.length; i++) {
+      const order = newOrders[i];
+
       const minedCodes = [];
+
+      // Check if the current order buyername has mined codes.
       for (let minerListItem of parsedMinerList) {
         for (let miners of minerListItem.miners) {
           if (miners.includes(order.buyerUsername)) {
             minedCodes.push(minerListItem.code);
+            uniqueMiners.add(order.buyerUsername);
           }
         }
       }
 
       if (minedCodes.length > 0) {
-        minerHasCheckoutCount += 1;
         const orderNote = minedCodes.join(", ");
         await updateOrderNote(order.id, orderNote, COOKIE);
         console.log(`Code for ${order.buyerUsername} is ${orderNote}`);
+      } else {
+        ordersNoMinerCodeCount += 1;
       }
+
+      setProgress(Math.round(((i + 1) / newOrders.length) * 100));
     }
 
     console.log(parsedMinerList);
 
     setProgressText(`
-    ${parsedMinerList.length} codes.\n
+    Total ${parsedMinerList.length} codes.\n
     ${parsedMinerList.reduce(
       (accum, currentValue) => accum + currentValue.miners.length,
       0
     )} bundles mined.\n
-    ${minerHasCheckoutCount} miners has checkout.
+    ${uniqueMiners.size} unique miners checkout.
+    ${ordersNoMinerCodeCount} checkout but no mine.
     `);
-  };
 
+    setCurrentState(LiveNotesState.Done);
+  };
+  console.log(progress);
   return (
     <Box>
       <Stack direction={"row"} spacing={1}>
@@ -90,6 +118,7 @@ const LiveNotes = () => {
           variant="contained"
           color="info"
           onClick={handleSendNotesToBigSeller}
+          disabled={currentState === LiveNotesState.Loading}
         >
           SET ORDER NOTES
         </Button>
@@ -101,9 +130,15 @@ const LiveNotes = () => {
         placeholder="Start typing... "
         onChange={(e) => setMinersListText(e.target.value)}
         value={minersListText}
+        disabled={currentState === LiveNotesState.Loading}
       />
-      Logs:
-      {progressText}
+      {currentState === LiveNotesState.Loading && (
+        <LinearProgress variant="determinate" value={progress} />
+      )}
+
+      {currentState === LiveNotesState.Done && (
+        <Alert>Success! {progressText}</Alert>
+      )}
     </Box>
   );
 };

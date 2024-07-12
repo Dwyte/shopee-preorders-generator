@@ -2,7 +2,7 @@ import axios from "axios";
 
 type ENV = "dev" | "prod";
 const endpoints = {
-  dev: "http://localhost:3000",
+  dev: "http://localhost:3000/bigSeller",
   prod: "/bigSeller",
 };
 

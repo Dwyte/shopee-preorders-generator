@@ -65,13 +65,15 @@ app.post("/bigSeller/orderNote", async (req, res) => {
   return res.send(response.data);
 });
 
-// Serve the static files from the React app
-app.use(express.static(path.join(__dirname, "dist")));
+if (process.env.VITE_ENVIRONMENT === "prod") {
+  // Serve the static files from the React app
+  app.use(express.static(path.join(__dirname, "dist")));
 
-// Handles any requests that don't match the ones above
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
-});
+  // Handles any requests that don't match the ones above
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "dist", "index.html"));
+  });
+}
 
 // Start the server
 app.listen(port, () => {
