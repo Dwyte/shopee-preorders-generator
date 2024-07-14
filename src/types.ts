@@ -47,3 +47,10 @@ export interface UserSettings {
   hasNewItemsRecently?: boolean;
   bigSellerCookie: string;
 }
+
+export interface LiveNotes {
+  id: string;
+  user: string;
+  datetime: number;
+  liveNotes: string;
+}

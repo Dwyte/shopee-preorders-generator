@@ -25,7 +25,12 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { GeneratedList, UserGeneratedList, UserSettings } from "./types";
+import {
+  GeneratedList,
+  LiveNotes,
+  UserGeneratedList,
+  UserSettings,
+} from "./types";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -43,11 +48,16 @@ const db = getFirestore(app);
 const storage = getStorage();
 const GENERATED_LISTS_COLLECTION_NAME = "generatedLists";
 const USER_SETTINGS_COLLECTION_NAME = "userSettings";
+const LIVE_NOTES_COLLECTION_NAME = "liveNotes";
 
 const generatedListsCollection = collection(
   db,
   GENERATED_LISTS_COLLECTION_NAME
 );
+
+const userSettingsCollection = collection(db, USER_SETTINGS_COLLECTION_NAME);
+
+const liveNotesCollection = collection(db, LIVE_NOTES_COLLECTION_NAME);
 
 /**
  *
@@ -181,12 +191,7 @@ export const deleteFIle = async (directory: string) => {
  * @returns the user's userSettings
  */
 export const getUserSettings = async (user: string) => {
-  const userSettingsCollectionRef = collection(
-    db,
-    USER_SETTINGS_COLLECTION_NAME
-  );
-
-  const q = query(userSettingsCollectionRef, where("user", "==", user));
+  const q = query(userSettingsCollection, where("user", "==", user));
   const userSettings = (await getDocs(q)).docs[0];
 
   // HOT FIX
@@ -294,4 +299,69 @@ export const downloadUserDTSFiles = async (user: string) => {
   }
 
   return userDTSFiles;
+};
+
+/**
+ *
+ * @param user
+ * @param liveNotes
+ * @returns
+ */
+export const addLiveNotes = async (user: string, liveNotes: string) => {
+  const newLiveNotes: LiveNotes = {
+    user,
+    datetime: Date.now(),
+    liveNotes,
+  } as LiveNotes;
+
+  const newDoc = await addDoc(liveNotesCollection, newLiveNotes);
+  newLiveNotes.id = newDoc.id;
+
+  return newLiveNotes;
+};
+
+/**
+ *
+ * @param user
+ * @param liveNotes
+ * @returns
+ */
+export const updateLiveNotes = async (docId: string, newLiveNote: string) => {
+  const docRef = doc(db, LIVE_NOTES_COLLECTION_NAME, docId);
+  await updateDoc(docRef, {
+    liveNotes: newLiveNote,
+  });
+  console.log("Updated doc", docId);
+};
+
+/**
+ *
+ * @param user
+ * @param liveNotes
+ * @returns
+ */
+export const getLiveNotes = async (user: string) => {
+  const q = query(
+    liveNotesCollection,
+    where("user", "==", user),
+    orderBy("datetime", "desc")
+  );
+
+  const results = await getDocs(q);
+  const resultsData = results.docs.map((doc) => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as LiveNotes[];
+
+  return resultsData;
+};
+
+/**
+ *
+ * @param docId the id of the userGeneratedList to delete
+ */
+export const deleteUserLiveNote = async (docId: string) => {
+  const docRef = doc(db, LIVE_NOTES_COLLECTION_NAME, docId);
+  await deleteDoc(docRef);
+  console.log("Deleted doc", docId);
 };

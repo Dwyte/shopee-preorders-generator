@@ -21,7 +21,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import ThemeContext from "./contexts/ThemeContext";
 import UserSettingsContext from "./contexts/UserSettingsContext";
-import LiveNotes from "./components/LiveNotes";
+import LiveNotesPage from "./components/LiveNotes";
 
 const darkTheme = createTheme({
   palette: {
@@ -174,7 +174,7 @@ const App = () => {
                       }
                     />
 
-                    <Route path="/liveNotes" element={<LiveNotes />} />
+                    <Route path="/liveNotes" element={<LiveNotesPage />} />
                     <Route path="/settings" element={<Settings />} />
 
                     <Route
