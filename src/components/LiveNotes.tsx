@@ -34,6 +34,22 @@ enum LiveNotesState {
   Done,
 }
 
+const liveNotesTextAreaPlaceholder = `Use the following format:
+CODE: <Enter Code Here> (Space after "CODE:" is important)
+<miner/buyer 1>        
+<miner/buyer 2>        
+<miner/buyer 3>
+
+CODE: <Enter Code Here>
+<miner/buyer 1>       
+<miner/buyer 2>    
+
+CODE: <Enter Code Here>
+<miner/buyer 1>
+
+(Click NEW CODE-MINERS TEMPLATE to autofill the following format)
+`
+
 const newLiveNoteTemplate: LiveNotes = {
   id: "",
   user: "",
@@ -295,21 +311,7 @@ const LiveNotesPage = () => {
         minRows={20}
         maxRows={20}
         ref={minersListTextInput}
-        placeholder="Use the following format:
-CODE: <Enter Code Here> (Space after CODE: is important)
-<username 1>        
-<username 2>        
-<username 3>
-
-CODE: <Enter Code Here>
-<username 1>       
-<username 2>    
-
-CODE: <Enter Code Here>
-<username 1>
-
-(Click NEW CODE-MINERS TEMPLATE to autofill the following format.)
-"
+        placeholder={liveNotesTextAreaPlaceholder}
         onChange={(e) => setMinersListText(e.target.value)}
         value={minersListText}
         disabled={currentState === LiveNotesState.Loading}
