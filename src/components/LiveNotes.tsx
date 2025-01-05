@@ -9,7 +9,6 @@ import {
   Select,
   SelectChangeEvent,
   Stack,
-  TextareaAutosizeProps,
 } from "@mui/material";
 import TextareaAutosize from "./TextareaAutosize";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -27,7 +26,7 @@ import {
   updateLiveNotes,
 } from "../api";
 
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 
 enum LiveNotesState {
   Initial,
@@ -63,13 +62,11 @@ const LiveNotesPage = () => {
       if (currentUser) {
         const liveNotes = await getLiveNotes(currentUser);
         setUserLiveNotes(liveNotes);
-
       }
     };
 
     initializeLiveNotes();
   }, []);
-
 
   const handleDelete = async () => {
     setCurrentState(LiveNotesState.Loading);
@@ -196,10 +193,23 @@ const LiveNotesPage = () => {
     setCurrentState(LiveNotesState.Done);
   };
 
+  const handleSendNotesToBigSellerFake = () => {
+    setCurrentState(LiveNotesState.Loading);
+    setProgress(0);
+
+    setTimeout(() => {
+      setProgress(100);
+      setTimeout(() => {
+        setCurrentState(LiveNotesState.Done);
+
+      }, 500)
+    }, 2000);
+  }
+
   const handleAddBundleCodeMinersTemplate = async () => {
     setMinersListText((prev) => {
-      return prev + "CODE: \n\n\n\n\n\n\n\n-------------------------\n"
-    })
+      return prev + "CODE: \n\n\n\n\n\n\n\n-------------------------\n";
+    });
 
     setTimeout(() => {
       if (minersListTextInput.current) {
@@ -207,13 +217,22 @@ const LiveNotesPage = () => {
         minersListTextInput.current.setSelectionRange(position, position);
         minersListTextInput.current.focus();
 
-        minersListTextInput.current.scrollTop = minersListTextInput.current.scrollHeight;
+        minersListTextInput.current.scrollTop =
+          minersListTextInput.current.scrollHeight;
       }
-    }, 0)
-  }
+    }, 0);
+  };
 
   return (
     <Box>
+      {currentState === LiveNotesState.Loading && (
+        <LinearProgress sx={{mb: 2}} variant="determinate" value={progress} />
+      )}
+
+      {currentState === LiveNotesState.Done && (
+        <Alert sx={{mb: 2}}>Success! {progressText}</Alert>
+      )}
+
       <Stack direction={"row"} spacing={1}>
         <FormControl size="small" sx={{ mt: 2, mb: 1, flex: 1 }}>
           <InputLabel id="demo-simple-select-label">{label}</InputLabel>
@@ -270,6 +289,7 @@ const LiveNotesPage = () => {
           SET ORDER NOTES
         </Button>
       </Stack>
+
       <TextareaAutosize
         sx={{ mt: 1 }}
         minRows={20}
@@ -294,15 +314,14 @@ CODE: <Enter Code Here>
         value={minersListText}
         disabled={currentState === LiveNotesState.Loading}
       />
-      {currentState === LiveNotesState.Loading && (
-        <LinearProgress variant="determinate" value={progress} />
-      )}
 
-      {currentState === LiveNotesState.Done && (
-        <Alert>Success! {progressText}</Alert>
-      )}
-
-      <Button startIcon={<AutoFixHighIcon />} variant="contained" onClick={handleAddBundleCodeMinersTemplate}> Code-Miners Template</Button>
+      <Button
+        startIcon={<AutoFixHighIcon />}
+        variant="contained"
+        onClick={handleAddBundleCodeMinersTemplate}
+      >
+        Code-Miners Template
+      </Button>
     </Box>
   );
 };
