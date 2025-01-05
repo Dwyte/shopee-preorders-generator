@@ -80,6 +80,8 @@ const parseMinerList = (minerListText) => {
           code: currentCode,
           miners: currentCodeMiners,
         });
+
+        
       }
 
       currentCode = upperCasedLine.replace("CODE:", "").trim();

@@ -26,6 +26,7 @@ import {
   updateLiveNotes,
 } from "../api";
 
+
 enum LiveNotesState {
   Initial,
   Loading,
@@ -57,8 +58,8 @@ const LiveNotesPage = () => {
       console.log(currentUser);
       if (currentUser) {
         const liveNotes = await getLiveNotes(currentUser);
-        console.log("1", liveNotes);
         setUserLiveNotes(liveNotes);
+
       }
     };
 
@@ -276,6 +277,15 @@ CODE: <Enter Code Here>
       {currentState === LiveNotesState.Done && (
         <Alert>Success! {progressText}</Alert>
       )}
+
+      CODE: SAMAR
+      maricel_logrosamar <br />
+      nerryceledoniomine summer <br />
+      lykadeeescalamine samar<br />
+      <br />
+      CODE: MIDNYT<br />
+      abdulgafurmamintomine midnight <br />
+      vincentalexmidnight<br />
     </Box>
   );
 };
