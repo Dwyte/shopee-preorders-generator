@@ -9,13 +9,14 @@ import {
   Select,
   SelectChangeEvent,
   Stack,
+  TextareaAutosizeProps,
 } from "@mui/material";
 import TextareaAutosize from "./TextareaAutosize";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
 import { getNewOrders, parseMinerList, updateOrderNote } from "../bigsellerAPI";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import UserSettingsContext from "../contexts/UserSettingsContext";
 import { timestampToDatetimeText } from "../scripts";
 import { LiveNotes } from "../types";
@@ -26,6 +27,7 @@ import {
   updateLiveNotes,
 } from "../api";
 
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 
 enum LiveNotesState {
   Initial,
@@ -53,6 +55,8 @@ const LiveNotesPage = () => {
   const [progress, setProgress] = useState(0);
   const { currentUser, userSettings } = useContext(UserSettingsContext);
 
+  const minersListTextInput = useRef<HTMLTextAreaElement | null>(null);
+
   useEffect(() => {
     const initializeLiveNotes = async () => {
       console.log(currentUser);
@@ -65,6 +69,7 @@ const LiveNotesPage = () => {
 
     initializeLiveNotes();
   }, []);
+
 
   const handleDelete = async () => {
     setCurrentState(LiveNotesState.Loading);
@@ -191,6 +196,22 @@ const LiveNotesPage = () => {
     setCurrentState(LiveNotesState.Done);
   };
 
+  const handleAddBundleCodeMinersTemplate = async () => {
+    setMinersListText((prev) => {
+      return prev + "CODE: \n\n\n\n\n\n\n\n-------------------------\n"
+    })
+
+    setTimeout(() => {
+      if (minersListTextInput.current) {
+        const position = minersListTextInput.current.value.length - 34;
+        minersListTextInput.current.setSelectionRange(position, position);
+        minersListTextInput.current.focus();
+
+        minersListTextInput.current.scrollTop = minersListTextInput.current.scrollHeight;
+      }
+    }, 0)
+  }
+
   return (
     <Box>
       <Stack direction={"row"} spacing={1}>
@@ -253,6 +274,7 @@ const LiveNotesPage = () => {
         sx={{ mt: 1 }}
         minRows={20}
         maxRows={20}
+        ref={minersListTextInput}
         placeholder="Use the following format:
 CODE: <Enter Code Here> (Space after CODE: is important)
 <username 1>        
@@ -265,6 +287,8 @@ CODE: <Enter Code Here>
 
 CODE: <Enter Code Here>
 <username 1>
+
+(Click NEW CODE-MINERS TEMPLATE to autofill the following format.)
 "
         onChange={(e) => setMinersListText(e.target.value)}
         value={minersListText}
@@ -278,14 +302,7 @@ CODE: <Enter Code Here>
         <Alert>Success! {progressText}</Alert>
       )}
 
-      CODE: SAMAR
-      maricel_logrosamar <br />
-      nerryceledoniomine summer <br />
-      lykadeeescalamine samar<br />
-      <br />
-      CODE: MIDNYT<br />
-      abdulgafurmamintomine midnight <br />
-      vincentalexmidnight<br />
+      <Button startIcon={<AutoFixHighIcon />} variant="contained" onClick={handleAddBundleCodeMinersTemplate}> Code-Miners Template</Button>
     </Box>
   );
 };
