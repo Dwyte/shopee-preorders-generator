@@ -212,17 +212,17 @@ const LiveNotesPage = () => {
     setCurrentState(LiveNotesState.Done);
   };
 
-  const handleSendNotesToBigSellerFake = () => {
-    setCurrentState(LiveNotesState.Loading);
-    setProgress(0);
+  // const handleSendNotesToBigSellerFake = () => {
+  //   setCurrentState(LiveNotesState.Loading);
+  //   setProgress(0);
 
-    setTimeout(() => {
-      setProgress(100);
-      setTimeout(() => {
-        setCurrentState(LiveNotesState.Done);
-      }, 500);
-    }, 2000);
-  };
+  //   setTimeout(() => {
+  //     setProgress(100);
+  //     setTimeout(() => {
+  //       setCurrentState(LiveNotesState.Done);
+  //     }, 500);
+  //   }, 2000);
+  // };
 
   const handleAddBundleCodeMinersTemplate = async () => {
     setMinersListText((prev) => {
