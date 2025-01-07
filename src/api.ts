@@ -366,7 +366,6 @@ export const deleteUserLiveNote = async (docId: string) => {
   console.log("Deleted doc", docId);
 };
 
-
 export const extractBundleCodes = (liveNotes: LiveNotes[]) => {
   const bundleCodes = new Set<string>([]);
   for (let liveNote of liveNotes) {
@@ -378,28 +377,37 @@ export const extractBundleCodes = (liveNotes: LiveNotes[]) => {
 
       if (currentLine.includes("CODE:")) {
         // Remove common metadata added to code. only [A-Z and dash]
-        const bundleCode = currentLine.toUpperCase().replace("CODE:", "").replace("SOLD", "").replace("OUT", "").replace("MINERS", "").replace(/[^a-zA-Z-]/g, "").trim()
+        const bundleCode = currentLine
+          .toUpperCase()
+          .replace("CODE:", "")
+          .replace("SOLD", "")
+          .replace("OUT", "")
+          .replace("MINERS", "")
+          .replace(/[^a-zA-Z-]/g, "")
+          .trim();
 
-        bundleCodes.add(bundleCode)
+        if (bundleCode) {
+          bundleCodes.add(bundleCode);
+        }
       }
     }
   }
 
   return Array.from(bundleCodes);
-}
+};
 
 /**
  * Replaces the current bundleCodes saved [localstorage]
- * @param bundleCodes 
+ * @param bundleCodes
  */
 export const saveBundleCodes = (user: string, bundleCodes: string[]) => {
-  localStorage.setItem(`bundleCodes-${user}`, JSON.stringify(bundleCodes))
-}
+  localStorage.setItem(`bundleCodes-${user}`, JSON.stringify(bundleCodes));
+};
 
 export const getBundleCodes = (user: string) => {
   const bundleCodes = localStorage.getItem(`bundleCodes-${user}`);
   if (bundleCodes) {
-    return JSON.parse(bundleCodes)
+    return JSON.parse(bundleCodes);
   }
   return null;
-}
+};

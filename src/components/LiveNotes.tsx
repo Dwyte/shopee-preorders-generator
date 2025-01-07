@@ -3,30 +3,36 @@ import {
   Box,
   Button,
   FormControl,
+  FormControlLabel,
   InputLabel,
   LinearProgress,
   MenuItem,
   Select,
   SelectChangeEvent,
   Stack,
+  Switch,
 } from "@mui/material";
 import TextareaAutosize from "./TextareaAutosize";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
 import { getNewOrders, parseMinerList, updateOrderNote } from "../bigsellerAPI";
-import { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import UserSettingsContext from "../contexts/UserSettingsContext";
 import { timestampToDatetimeText } from "../scripts";
 import { LiveNotes } from "../types";
 import {
   addLiveNotes,
   deleteUserLiveNote,
+  extractBundleCodes,
+  getBundleCodes,
   getLiveNotes,
+  saveBundleCodes,
   updateLiveNotes,
 } from "../api";
 
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import stringComparison from "string-comparison";
 
 enum LiveNotesState {
   Initial,
@@ -48,7 +54,13 @@ CODE: <Enter Code Here>
 <miner/buyer 1>
 
 (Click NEW CODE-MINERS TEMPLATE to autofill the following format)
-`
+`;
+
+const codeMinersListTemplate = {
+  codePrefix: "CODE:",
+  spacesAfterCode: "\n\n\n\n\n\n",
+  listFooter: "- - - - - - - - - - - - - - -",
+};
 
 const newLiveNoteTemplate: LiveNotes = {
   id: "",
@@ -72,6 +84,13 @@ const LiveNotesPage = () => {
 
   const minersListTextInput = useRef<HTMLTextAreaElement | null>(null);
 
+  const [isIntelligentModeEnabled, setIsIntelligentModeEnabled] =
+    useState(true);
+
+  const [intelligentDropText, setIntelligentDropText] = useState("");
+
+  const [minersListJSON, setMinersListJSON] = useState({});
+
   useEffect(() => {
     const initializeLiveNotes = async () => {
       console.log(currentUser);
@@ -80,7 +99,6 @@ const LiveNotesPage = () => {
         setUserLiveNotes(liveNotes);
       }
     };
-
     initializeLiveNotes();
   }, []);
 
@@ -217,19 +235,26 @@ const LiveNotesPage = () => {
       setProgress(100);
       setTimeout(() => {
         setCurrentState(LiveNotesState.Done);
-
-      }, 500)
+      }, 500);
     }, 2000);
-  }
+  };
 
   const handleAddBundleCodeMinersTemplate = async () => {
     setMinersListText((prev) => {
-      return prev + "CODE: \n\n\n\n\n\n\n\n-------------------------\n";
+      return (
+        prev +
+        `${codeMinersListTemplate.codePrefix} ${codeMinersListTemplate.spacesAfterCode}${codeMinersListTemplate.listFooter}\n`
+      );
     });
 
     setTimeout(() => {
       if (minersListTextInput.current) {
-        const position = minersListTextInput.current.value.length - 34;
+        const position =
+          minersListTextInput.current.value.length -
+          codeMinersListTemplate.spacesAfterCode.length -
+          codeMinersListTemplate.listFooter.length -
+          1;
+
         minersListTextInput.current.setSelectionRange(position, position);
         minersListTextInput.current.focus();
 
@@ -239,18 +264,108 @@ const LiveNotesPage = () => {
     }, 0);
   };
 
+  const handleIntelligentDropTextChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    localStorage.setItem("__backup__", minersListText);
+
+    // Set state to loading so user can't edit the main text area.
+    setCurrentState(LiveNotesState.Loading);
+
+    setIntelligentDropText(e.target.value);
+
+    // Mapped current text to json
+    let minersListTextLines = minersListText.split("\n");
+    let minersListJSON: { [key: string]: Set<string> } = {};
+    let currentCode = null;
+    for (let line of minersListTextLines) {
+      if (line.startsWith("CODE:")) {
+        currentCode = line.replace("CODE:", "").trim().toUpperCase();
+        console.log(currentCode)
+        // Check if empty string
+        if (currentCode) {
+          minersListJSON[currentCode] = new Set([]);
+        } else {
+          currentCode = null;
+        }
+
+        continue;
+      }
+
+      // push miner to current code list
+      if (currentCode && line && line.trim() !== codeMinersListTemplate.listFooter) {
+        minersListJSON[currentCode].add(line);
+      }
+    }
+
+    // split lines
+    let lines = e.target.value.split("\n");
+
+    // removed non-mine
+    lines = lines.filter((value) => {
+      return !(
+        value.includes("buying") ||
+        value.includes("joined") ||
+        value.includes("followed")
+      );
+    });
+
+    const bundleCodes = getBundleCodes(currentUser);
+    for (let line of lines) {
+      // Look for exact substring match from bundle codes
+
+      for (let bundleCode of bundleCodes) {
+        if (line.toUpperCase().endsWith(bundleCode)) {
+          if (bundleCode in minersListJSON) {
+            minersListJSON[bundleCode].add(line);
+          } else {
+            minersListJSON[bundleCode] = new Set([line]);
+          }
+        }
+      }
+    }
+
+
+    /**
+     * tfhl3uwkw3midnight
+che431mine midnight
+ronie_t... and other 13 viewers joined!
+nicolep... is buying products!
+kristin... is buying products!
+evangelinabellenmine bikol
+__nana___Mine tiger
+tres11 and other 15 viewers joined!
+nicolequijanogabrielmine tiger
+     */
+
+    setCurrentState(LiveNotesState.Done);
+    console.log(lines, minersListJSON);
+
+    let newMinersListTextArray = [];
+    for (let code in minersListJSON) {
+      newMinersListTextArray.push(`CODE: ${code}`);
+
+      for (let miner of minersListJSON[code]) {
+        newMinersListTextArray.push(miner)
+      }
+
+      newMinersListTextArray.push("\n");
+      newMinersListTextArray.push(codeMinersListTemplate.listFooter)
+    }
+
+    setMinersListText(newMinersListTextArray.join("\n"))
+  };
+
   return (
     <Box>
       {currentState === LiveNotesState.Loading && (
-        <LinearProgress sx={{mb: 2}} variant="determinate" value={progress} />
+        <LinearProgress sx={{ mb: 2 }} variant="determinate" value={progress} />
       )}
-
       {currentState === LiveNotesState.Done && (
-        <Alert sx={{mb: 2}}>Success! {progressText}</Alert>
+        <Alert sx={{ mb: 2 }}>Success! {progressText}</Alert>
       )}
-
-      <Stack direction={"row"} spacing={1}>
-        <FormControl size="small" sx={{ mt: 2, mb: 1, flex: 1 }}>
+      <Stack direction={"column"} spacing={1}>
+        <FormControl size="small" sx={{ flex: 1 }}>
           <InputLabel id="demo-simple-select-label">{label}</InputLabel>
           <Select
             labelId="demo-simple-select-label"
@@ -268,46 +383,64 @@ const LiveNotesPage = () => {
           </Select>
         </FormControl>
 
-        <Button
-          variant="outlined"
-          color="error"
-          onClick={handleDelete}
-          disabled={
-            currentState === LiveNotesState.Loading ||
-            minersListText.length === 0
-          }
+        <Stack
+          direction={"row"}
+          spacing={1}
+          useFlexGap
+          sx={{ flexWrap: "wrap" }}
         >
-          <DeleteIcon />
-        </Button>
-        <Button
-          variant="contained"
-          color="success"
-          disabled={
-            currentState === LiveNotesState.Loading ||
-            minersListText.length === 0 ||
-            currentUserLiveNote.liveNotes === minersListText
-          }
-          onClick={handleSave}
-        >
-          <SaveIcon />
-        </Button>
+          <Button
+            disabled={currentState === LiveNotesState.Loading}
+            startIcon={<AutoFixHighIcon />}
+            variant="contained"
+            onClick={handleAddBundleCodeMinersTemplate}
+          >
+            Code-Miners Template
+          </Button>
 
-        <Button
-          startIcon={<SendIcon />}
-          variant="contained"
-          color="info"
-          onClick={handleSendNotesToBigSeller}
-          disabled={
-            currentState === LiveNotesState.Loading ||
-            minersListText.length === 0
-          }
-        >
-          SET ORDER NOTES
-        </Button>
+          <div style={{ flex: 1 }}></div>
+
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleDelete}
+            disabled={
+              currentState === LiveNotesState.Loading ||
+              minersListText.length === 0
+            }
+          >
+            <DeleteIcon />
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            disabled={
+              currentState === LiveNotesState.Loading ||
+              minersListText.length === 0 ||
+              currentUserLiveNote.liveNotes === minersListText
+            }
+            onClick={handleSave}
+          >
+            <SaveIcon />
+          </Button>
+
+          <Button
+            startIcon={<SendIcon />}
+            variant="contained"
+            color="info"
+            onClick={handleSendNotesToBigSeller}
+            disabled={
+              currentState === LiveNotesState.Loading ||
+              minersListText.length === 0
+            }
+          >
+            SET ORDER NOTES
+          </Button>
+        </Stack>
       </Stack>
 
       <TextareaAutosize
-        sx={{ mt: 1 }}
+        sx={{ mt: 1, resize: "none", cursor: "auto" }}
         minRows={20}
         maxRows={20}
         ref={minersListTextInput}
@@ -317,13 +450,15 @@ const LiveNotesPage = () => {
         disabled={currentState === LiveNotesState.Loading}
       />
 
-      <Button
-        startIcon={<AutoFixHighIcon />}
-        variant="contained"
-        onClick={handleAddBundleCodeMinersTemplate}
-      >
-        Code-Miners Template
-      </Button>
+      Intelligent Drop Area:
+      <TextareaAutosize
+        placeholder="Drag and Drop or Paste Buyers Chats Here (Needs exact Code at the end of chat)"
+        minRows={2}
+        maxRows={2}
+        sx={{ resize: "none" }}
+        onChange={handleIntelligentDropTextChange}
+        value={intelligentDropText}
+      />
     </Box>
   );
 };
