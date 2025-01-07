@@ -4,24 +4,29 @@ import {
   Button,
   Chip,
   FormControl,
-  FormControlLabel,
   InputLabel,
   LinearProgress,
   MenuItem,
+  Paper,
   Select,
   SelectChangeEvent,
   Stack,
-  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from "@mui/material";
-import TextareaAutosize from "./TextareaAutosize";
+import TextareaAutosize from "../TextareaAutosize";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
-import { getNewOrders, parseMinerList, updateOrderNote } from "../bigsellerAPI";
+import { getNewOrders, parseMinerList, updateOrderNote } from "../../bigsellerAPI";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import UserSettingsContext from "../contexts/UserSettingsContext";
-import { timestampToDatetimeText } from "../scripts";
-import { LiveNotes } from "../types";
+import UserSettingsContext from "../../contexts/UserSettingsContext";
+import { timestampToDatetimeText } from "../../scripts";
+import { LiveNotes } from "../../types";
 import {
   addLiveNotes,
   deleteUserLiveNote,
@@ -30,7 +35,7 @@ import {
   getLiveNotes,
   saveBundleCodes,
   updateLiveNotes,
-} from "../api";
+} from "../../api";
 
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import UndoIcon from "@mui/icons-material/Undo";
@@ -93,6 +98,8 @@ const LiveNotesPage = () => {
 
   const [intelligentDropText, setIntelligentDropText] = useState("");
   const [canUndo, setCanUndo] = useState(false);
+
+  const [noCodeMatchLines, setNoCodeMatchLines] = useState<string[]>([]);
 
   useEffect(() => {
     const initializeLiveNotes = async () => {
@@ -325,7 +332,12 @@ const LiveNotesPage = () => {
     const bundleCodes = getBundleCodes(currentUser).sort(
       (prev, curr) => curr.length - prev.length
     );
+
+    const newNoCodeMatchLines: string[] = [];
     for (let line of lines) {
+      if (line.trim() === "")
+        continue;
+
       // Look for exact substring match from bundle codes
 
       let foundCode = false;
@@ -342,7 +354,12 @@ const LiveNotesPage = () => {
 
         if (foundCode) break;
       }
+
+      if (!foundCode) {
+        newNoCodeMatchLines.push(line);
+      }
     }
+    setNoCodeMatchLines(newNoCodeMatchLines);
 
     /**
      * tfhl3uwkw3midnight
@@ -362,27 +379,26 @@ regie123midnight
 cookiebols tger
      */
 
-    
     // Convert json back to text to display on textarea
     let newMinersListTextArray = [];
     for (let code in minersListJSON) {
       newMinersListTextArray.push(`CODE: ${code}`);
-      
+
       for (let miner of minersListJSON[code]) {
         newMinersListTextArray.push(miner);
       }
-      
+
       newMinersListTextArray.push("\n");
       newMinersListTextArray.push(codeMinersListTemplate.listFooter);
     }
-    
+
     setMinersListText(newMinersListTextArray.join("\n") + "\n");
     setCurrentState(LiveNotesState.Done);
   };
 
   const handleUndoRecentChanges = () => {
     const backup = localStorage.getItem("__backup__");
-    console.log(backup)
+    console.log(backup);
     if (backup !== null) {
       setMinersListText(backup);
       setIntelligentDropText("");
@@ -393,7 +409,7 @@ cookiebols tger
   const handleConfirm = () => {
     setIntelligentDropText("");
     setCanUndo(false);
-  }
+  };
 
   return (
     <Box>
@@ -487,7 +503,8 @@ cookiebols tger
         value={minersListText}
         disabled={canUndo || currentState === LiveNotesState.Loading}
       />
-      Intelligent Drop Area {canUndo && '(Confirm changes before pasting again)'}:
+      Intelligent Drop Area{" "}
+      {canUndo && "(Confirm changes before pasting again)"}:
       <TextareaAutosize
         placeholder="Drag and Drop or Paste Buyers Chats Here (Needs exact Code at the end of chat)"
         minRows={5}
@@ -499,25 +516,48 @@ cookiebols tger
       />
       <Stack direction={"row"}>
         <div style={{ flex: 1 }}>
-          {intelligentDropText && <Chip
-            size="small"
-            label={`${intelligentDropText.split("\n").length} line(s). `}
-          ></Chip>}
+          {intelligentDropText && (
+            <Chip
+              size="small"
+              label={`${intelligentDropText.split("\n").length} line(s). `}
+            ></Chip>
+          )}
         </div>
         <Stack spacing={1} direction="row">
-
-        <Button
-          startIcon={<UndoIcon />}
-          onClick={handleUndoRecentChanges}
-          disabled={!canUndo}
+          <Button
+            startIcon={<UndoIcon />}
+            onClick={handleUndoRecentChanges}
+            disabled={!canUndo}
           >
-          Undo Changes
-        </Button>
-            <Button onClick={handleConfirm} variant="contained" disabled={!canUndo}>
-              Confirm Changes
-            </Button>
-          </Stack>
+            Undo Changes
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            variant="contained"
+            disabled={!canUndo}
+          >
+            Confirm Changes
+          </Button>
+        </Stack>
       </Stack>
+      {noCodeMatchLines.length > 0 && <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Chats with No Exact Code Match</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {noCodeMatchLines.map((line) => {
+              return (
+                <TableRow key={line}>
+                  <TableCell>{line}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>}
     </Box>
   );
 };

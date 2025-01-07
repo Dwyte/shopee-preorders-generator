@@ -21,7 +21,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import ThemeContext from "./contexts/ThemeContext";
 import UserSettingsContext from "./contexts/UserSettingsContext";
-import LiveNotesPage from "./components/LiveNotes";
+import LiveNotesPage from "./components/LiveNotes/LiveNotes";
 
 const darkTheme = createTheme({
   palette: {
