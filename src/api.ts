@@ -404,10 +404,10 @@ export const saveBundleCodes = (user: string, bundleCodes: string[]) => {
   localStorage.setItem(`bundleCodes-${user}`, JSON.stringify(bundleCodes));
 };
 
-export const getBundleCodes = (user: string) => {
+export const getBundleCodes = (user: string): string[] => {
   const bundleCodes = localStorage.getItem(`bundleCodes-${user}`);
   if (bundleCodes) {
     return JSON.parse(bundleCodes);
   }
-  return null;
+  return [];
 };

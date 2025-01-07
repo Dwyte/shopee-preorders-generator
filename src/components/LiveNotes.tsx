@@ -2,6 +2,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -32,12 +33,18 @@ import {
 } from "../api";
 
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import UndoIcon from "@mui/icons-material/Undo";
 import stringComparison from "string-comparison";
 
 enum LiveNotesState {
   Initial,
   Loading,
   Done,
+}
+
+enum IntelligentDropState {
+  Initial,
+  Confirming,
 }
 
 const liveNotesTextAreaPlaceholder = `Use the following format:
@@ -84,12 +91,8 @@ const LiveNotesPage = () => {
 
   const minersListTextInput = useRef<HTMLTextAreaElement | null>(null);
 
-  const [isIntelligentModeEnabled, setIsIntelligentModeEnabled] =
-    useState(true);
-
   const [intelligentDropText, setIntelligentDropText] = useState("");
-
-  const [minersListJSON, setMinersListJSON] = useState({});
+  const [canUndo, setCanUndo] = useState(false);
 
   useEffect(() => {
     const initializeLiveNotes = async () => {
@@ -97,6 +100,9 @@ const LiveNotesPage = () => {
       if (currentUser) {
         const liveNotes = await getLiveNotes(currentUser);
         setUserLiveNotes(liveNotes);
+
+        const bundleCodes = extractBundleCodes(liveNotes);
+        saveBundleCodes(currentUser, bundleCodes);
       }
     };
     initializeLiveNotes();
@@ -268,6 +274,7 @@ const LiveNotesPage = () => {
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     localStorage.setItem("__backup__", minersListText);
+    setCanUndo(true);
 
     // Set state to loading so user can't edit the main text area.
     setCurrentState(LiveNotesState.Loading);
@@ -281,7 +288,7 @@ const LiveNotesPage = () => {
     for (let line of minersListTextLines) {
       if (line.startsWith("CODE:")) {
         currentCode = line.replace("CODE:", "").trim().toUpperCase();
-        console.log(currentCode)
+        console.log(currentCode);
         // Check if empty string
         if (currentCode) {
           minersListJSON[currentCode] = new Set([]);
@@ -293,7 +300,11 @@ const LiveNotesPage = () => {
       }
 
       // push miner to current code list
-      if (currentCode && line && line.trim() !== codeMinersListTemplate.listFooter) {
+      if (
+        currentCode &&
+        line &&
+        line.trim() !== codeMinersListTemplate.listFooter
+      ) {
         minersListJSON[currentCode].add(line);
       }
     }
@@ -310,10 +321,14 @@ const LiveNotesPage = () => {
       );
     });
 
-    const bundleCodes = getBundleCodes(currentUser);
+    // sort bundleCodes by length descending to avoid finding 2 codes ie. (twinstar and star);
+    const bundleCodes = getBundleCodes(currentUser).sort(
+      (prev, curr) => curr.length - prev.length
+    );
     for (let line of lines) {
       // Look for exact substring match from bundle codes
 
+      let foundCode = false;
       for (let bundleCode of bundleCodes) {
         if (line.toUpperCase().endsWith(bundleCode)) {
           if (bundleCode in minersListJSON) {
@@ -321,10 +336,13 @@ const LiveNotesPage = () => {
           } else {
             minersListJSON[bundleCode] = new Set([line]);
           }
+
+          foundCode = true;
         }
+
+        if (foundCode) break;
       }
     }
-
 
     /**
      * tfhl3uwkw3midnight
@@ -336,25 +354,46 @@ evangelinabellenmine bikol
 __nana___Mine tiger
 tres11 and other 15 viewers joined!
 nicolequijanogabrielmine tiger
+
+lloydtrinoma tawitawi
+ronierepaldatwinstar
+myrasolastorgatwinstar
+regie123midnight
+cookiebols tger
      */
 
-    setCurrentState(LiveNotesState.Done);
-    console.log(lines, minersListJSON);
-
+    
+    // Convert json back to text to display on textarea
     let newMinersListTextArray = [];
     for (let code in minersListJSON) {
       newMinersListTextArray.push(`CODE: ${code}`);
-
+      
       for (let miner of minersListJSON[code]) {
-        newMinersListTextArray.push(miner)
+        newMinersListTextArray.push(miner);
       }
-
+      
       newMinersListTextArray.push("\n");
-      newMinersListTextArray.push(codeMinersListTemplate.listFooter)
+      newMinersListTextArray.push(codeMinersListTemplate.listFooter);
     }
-
-    setMinersListText(newMinersListTextArray.join("\n"))
+    
+    setMinersListText(newMinersListTextArray.join("\n") + "\n");
+    setCurrentState(LiveNotesState.Done);
   };
+
+  const handleUndoRecentChanges = () => {
+    const backup = localStorage.getItem("__backup__");
+    console.log(backup)
+    if (backup !== null) {
+      setMinersListText(backup);
+      setIntelligentDropText("");
+      setCanUndo(false);
+    }
+  };
+
+  const handleConfirm = () => {
+    setIntelligentDropText("");
+    setCanUndo(false);
+  }
 
   return (
     <Box>
@@ -438,27 +477,47 @@ nicolequijanogabrielmine tiger
           </Button>
         </Stack>
       </Stack>
-
       <TextareaAutosize
-        sx={{ mt: 1, resize: "none", cursor: "auto" }}
+        sx={{ my: 1, resize: "none", cursor: "auto" }}
         minRows={20}
         maxRows={20}
         ref={minersListTextInput}
         placeholder={liveNotesTextAreaPlaceholder}
         onChange={(e) => setMinersListText(e.target.value)}
         value={minersListText}
-        disabled={currentState === LiveNotesState.Loading}
+        disabled={canUndo || currentState === LiveNotesState.Loading}
       />
-
-      Intelligent Drop Area:
+      Intelligent Drop Area {canUndo && '(Confirm changes before pasting again)'}:
       <TextareaAutosize
         placeholder="Drag and Drop or Paste Buyers Chats Here (Needs exact Code at the end of chat)"
-        minRows={2}
-        maxRows={2}
+        minRows={5}
+        maxRows={5}
         sx={{ resize: "none" }}
         onChange={handleIntelligentDropTextChange}
         value={intelligentDropText}
+        disabled={canUndo}
       />
+      <Stack direction={"row"}>
+        <div style={{ flex: 1 }}>
+          {intelligentDropText && <Chip
+            size="small"
+            label={`${intelligentDropText.split("\n").length} line(s). `}
+          ></Chip>}
+        </div>
+        <Stack spacing={1} direction="row">
+
+        <Button
+          startIcon={<UndoIcon />}
+          onClick={handleUndoRecentChanges}
+          disabled={!canUndo}
+          >
+          Undo Changes
+        </Button>
+            <Button onClick={handleConfirm} variant="contained" disabled={!canUndo}>
+              Confirm Changes
+            </Button>
+          </Stack>
+      </Stack>
     </Box>
   );
 };
