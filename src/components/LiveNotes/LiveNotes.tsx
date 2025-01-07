@@ -22,7 +22,11 @@ import TextareaAutosize from "../TextareaAutosize";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import SendIcon from "@mui/icons-material/Send";
-import { getNewOrders, parseMinerList, updateOrderNote } from "../../bigsellerAPI";
+import {
+  getNewOrders,
+  parseMinerList,
+  updateOrderNote,
+} from "../../bigsellerAPI";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import UserSettingsContext from "../../contexts/UserSettingsContext";
 import { timestampToDatetimeText } from "../../scripts";
@@ -39,7 +43,8 @@ import {
 
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import UndoIcon from "@mui/icons-material/Undo";
-import stringComparison from "string-comparison";
+import NoCodeMatchLine from "./NoCodeMatchLine";
+import { codeMinersListTemplate, parseMinersListText, stringifyMinersListJSON } from "./liveNotesScripts";
 
 enum LiveNotesState {
   Initial,
@@ -68,12 +73,6 @@ CODE: <Enter Code Here>
 (Click NEW CODE-MINERS TEMPLATE to autofill the following format)
 `;
 
-const codeMinersListTemplate = {
-  codePrefix: "CODE:",
-  spacesAfterCode: "\n\n\n\n\n\n",
-  listFooter: "- - - - - - - - - - - - - - -",
-};
-
 const newLiveNoteTemplate: LiveNotes = {
   id: "",
   user: "",
@@ -99,7 +98,7 @@ const LiveNotesPage = () => {
   const [intelligentDropText, setIntelligentDropText] = useState("");
   const [canUndo, setCanUndo] = useState(false);
 
-  const [noCodeMatchLines, setNoCodeMatchLines] = useState<string[]>([]);
+  const [noCodeMatchChats, setNoCodeMatchChats] = useState<string[]>([]);
 
   useEffect(() => {
     const initializeLiveNotes = async () => {
@@ -288,43 +287,20 @@ const LiveNotesPage = () => {
 
     setIntelligentDropText(e.target.value);
 
-    // Mapped current text to json
-    let minersListTextLines = minersListText.split("\n");
-    let minersListJSON: { [key: string]: Set<string> } = {};
-    let currentCode = null;
-    for (let line of minersListTextLines) {
-      if (line.startsWith("CODE:")) {
-        currentCode = line.replace("CODE:", "").trim().toUpperCase();
-        console.log(currentCode);
-        // Check if empty string
-        if (currentCode) {
-          minersListJSON[currentCode] = new Set([]);
-        } else {
-          currentCode = null;
-        }
+    // Parse miners list text into JSON format so we can easily add lines
+    let minersListJSON = parseMinersListText(minersListText);
 
-        continue;
-      }
 
-      // push miner to current code list
-      if (
-        currentCode &&
-        line &&
-        line.trim() !== codeMinersListTemplate.listFooter
-      ) {
-        minersListJSON[currentCode].add(line);
-      }
-    }
-
-    // split lines
+    // Get the Lines from the new on-change value
     let lines = e.target.value.split("\n");
 
-    // removed non-mine
-    lines = lines.filter((value) => {
+    // Filter out irrelevant lines that may not be related to mine
+    lines = lines.filter((line) => {
       return !(
-        value.includes("buying") ||
-        value.includes("joined") ||
-        value.includes("followed")
+        line.includes("buying") ||
+        line.includes("joined") ||
+        line.includes("followed") ||
+        line.includes("flex")
       );
     });
 
@@ -333,14 +309,18 @@ const LiveNotesPage = () => {
       (prev, curr) => curr.length - prev.length
     );
 
+    // Let's store lines that didnt include exact code
     const newNoCodeMatchLines: string[] = [];
+
+    // Loop through the lines
     for (let line of lines) {
-      if (line.trim() === "")
-        continue;
+
+      // skip empty lines
+      if (line.trim() === "") continue;
 
       // Look for exact substring match from bundle codes
-
       let foundCode = false;
+      
       for (let bundleCode of bundleCodes) {
         if (line.toUpperCase().endsWith(bundleCode)) {
           if (bundleCode in minersListJSON) {
@@ -359,40 +339,9 @@ const LiveNotesPage = () => {
         newNoCodeMatchLines.push(line);
       }
     }
-    setNoCodeMatchLines(newNoCodeMatchLines);
 
-    /**
-     * tfhl3uwkw3midnight
-che431mine midnight
-ronie_t... and other 13 viewers joined!
-nicolep... is buying products!
-kristin... is buying products!
-evangelinabellenmine bikol
-__nana___Mine tiger
-tres11 and other 15 viewers joined!
-nicolequijanogabrielmine tiger
-
-lloydtrinoma tawitawi
-ronierepaldatwinstar
-myrasolastorgatwinstar
-regie123midnight
-cookiebols tger
-     */
-
-    // Convert json back to text to display on textarea
-    let newMinersListTextArray = [];
-    for (let code in minersListJSON) {
-      newMinersListTextArray.push(`CODE: ${code}`);
-
-      for (let miner of minersListJSON[code]) {
-        newMinersListTextArray.push(miner);
-      }
-
-      newMinersListTextArray.push("\n");
-      newMinersListTextArray.push(codeMinersListTemplate.listFooter);
-    }
-
-    setMinersListText(newMinersListTextArray.join("\n") + "\n");
+    setNoCodeMatchChats(newNoCodeMatchLines);
+    setMinersListText(stringifyMinersListJSON(minersListJSON));
     setCurrentState(LiveNotesState.Done);
   };
 
@@ -410,6 +359,25 @@ cookiebols tger
     setIntelligentDropText("");
     setCanUndo(false);
   };
+
+  const handleResolveNoCodeMatchLine = (noCodeMatchChat: string, exactCode: string) => {
+    const minersListJSON = parseMinersListText(minersListText);
+
+    // Add line to exactCode
+    if (exactCode.toUpperCase() in minersListJSON) {
+      minersListJSON[exactCode].add(noCodeMatchChat);
+    } else {
+      minersListJSON[exactCode] = new Set([noCodeMatchChat]);
+    }
+
+    // Set new Text on Display
+    setMinersListText(stringifyMinersListJSON(minersListJSON))
+
+    // Remove line from the Table
+    setNoCodeMatchChats(noCodeMatchChats.filter((val) => val !== noCodeMatchChat))
+    console.log(`Added Line ${noCodeMatchChat} to ${exactCode}`)
+  }
+
 
   return (
     <Box>
@@ -540,24 +508,24 @@ cookiebols tger
           </Button>
         </Stack>
       </Stack>
-      {noCodeMatchLines.length > 0 && <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Chats with No Exact Code Match</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {noCodeMatchLines.map((line) => {
-              return (
-                <TableRow key={line}>
-                  <TableCell>{line}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>}
+      {noCodeMatchChats.length > 0 && (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>No Exact Code Chats</TableCell>
+                <TableCell>Suggestions</TableCell>
+                <TableCell>Manual Edit</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {noCodeMatchChats.map((line) => {
+                return <NoCodeMatchLine line={line} onAdd={handleResolveNoCodeMatchLine} />;
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Box>
   );
 };
