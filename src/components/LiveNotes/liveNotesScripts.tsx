@@ -13,8 +13,40 @@ lloydtrinoma tawitawi
 ronierepaldatwinstar
 myrasolastorgatwinstar
 regie123midnight
-cookiebols tger
+kjdbjqwebflewqk pinas
      */
+
+import { LiveNotes } from "../../types";
+
+
+export enum LiveNotesState {
+  Initial,
+  Loading,
+  Done,
+}
+
+export const liveNotesTextAreaPlaceholder = `Use the following format:
+CODE: <Enter Code Here> (Space after "CODE:" is important)
+<miner/buyer 1>        
+<miner/buyer 2>        
+<miner/buyer 3>
+
+CODE: <Enter Code Here>
+<miner/buyer 1>       
+<miner/buyer 2>    
+
+CODE: <Enter Code Here>
+<miner/buyer 1>
+
+(Click NEW CODE-MINERS TEMPLATE to autofill the following format)
+`;
+
+export const newLiveNoteTemplate: LiveNotes = {
+  id: "",
+  user: "",
+  liveNotes: "",
+  datetime: -1,
+};
 
 export const codeMinersListTemplate = {
   codePrefix: "CODE:",

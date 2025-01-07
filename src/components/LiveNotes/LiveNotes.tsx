@@ -44,41 +44,14 @@ import {
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import UndoIcon from "@mui/icons-material/Undo";
 import NoCodeMatchLine from "./NoCodeMatchLine";
-import { codeMinersListTemplate, parseMinersListText, stringifyMinersListJSON } from "./liveNotesScripts";
-
-enum LiveNotesState {
-  Initial,
-  Loading,
-  Done,
-}
-
-enum IntelligentDropState {
-  Initial,
-  Confirming,
-}
-
-const liveNotesTextAreaPlaceholder = `Use the following format:
-CODE: <Enter Code Here> (Space after "CODE:" is important)
-<miner/buyer 1>        
-<miner/buyer 2>        
-<miner/buyer 3>
-
-CODE: <Enter Code Here>
-<miner/buyer 1>       
-<miner/buyer 2>    
-
-CODE: <Enter Code Here>
-<miner/buyer 1>
-
-(Click NEW CODE-MINERS TEMPLATE to autofill the following format)
-`;
-
-const newLiveNoteTemplate: LiveNotes = {
-  id: "",
-  user: "",
-  liveNotes: "",
-  datetime: -1,
-};
+import {
+  LiveNotesState,
+  liveNotesTextAreaPlaceholder,
+  newLiveNoteTemplate,
+  codeMinersListTemplate,
+  parseMinersListText,
+  stringifyMinersListJSON,
+} from "./liveNotesScripts";
 
 const LiveNotesPage = () => {
   const label = "Select Date";
@@ -290,7 +263,6 @@ const LiveNotesPage = () => {
     // Parse miners list text into JSON format so we can easily add lines
     let minersListJSON = parseMinersListText(minersListText);
 
-
     // Get the Lines from the new on-change value
     let lines = e.target.value.split("\n");
 
@@ -314,13 +286,12 @@ const LiveNotesPage = () => {
 
     // Loop through the lines
     for (let line of lines) {
-
       // skip empty lines
       if (line.trim() === "") continue;
 
       // Look for exact substring match from bundle codes
       let foundCode = false;
-      
+
       for (let bundleCode of bundleCodes) {
         if (line.toUpperCase().endsWith(bundleCode)) {
           if (bundleCode in minersListJSON) {
@@ -360,7 +331,10 @@ const LiveNotesPage = () => {
     setCanUndo(false);
   };
 
-  const handleResolveNoCodeMatchLine = (noCodeMatchChat: string, exactCode: string) => {
+  const handleResolveNoCodeMatchLine = (
+    noCodeMatchChat: string,
+    exactCode: string
+  ) => {
     const minersListJSON = parseMinersListText(minersListText);
 
     // Add line to exactCode
@@ -371,13 +345,14 @@ const LiveNotesPage = () => {
     }
 
     // Set new Text on Display
-    setMinersListText(stringifyMinersListJSON(minersListJSON))
+    setMinersListText(stringifyMinersListJSON(minersListJSON));
 
     // Remove line from the Table
-    setNoCodeMatchChats(noCodeMatchChats.filter((val) => val !== noCodeMatchChat))
-    console.log(`Added Line ${noCodeMatchChat} to ${exactCode}`)
-  }
-
+    setNoCodeMatchChats(
+      noCodeMatchChats.filter((val) => val !== noCodeMatchChat)
+    );
+    console.log(`Added Line ${noCodeMatchChat} to ${exactCode}`);
+  };
 
   return (
     <Box>
@@ -519,8 +494,13 @@ const LiveNotesPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {noCodeMatchChats.map((line) => {
-                return <NoCodeMatchLine line={line} onAdd={handleResolveNoCodeMatchLine} />;
+              {noCodeMatchChats.map((chat) => {
+                return (
+                  <NoCodeMatchLine
+                    chat={chat}
+                    onAdd={handleResolveNoCodeMatchLine}
+                  />
+                );
               })}
             </TableBody>
           </Table>
