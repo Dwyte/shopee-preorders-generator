@@ -282,7 +282,7 @@ const LiveNotesPage = () => {
     );
 
     // Let's store lines that didnt include exact code
-    const newNoCodeMatchLines: string[] = [];
+    const newNoCodeMatchChats: string[] = [];
 
     // Loop through the lines
     for (let line of lines) {
@@ -291,14 +291,11 @@ const LiveNotesPage = () => {
 
       // Look for exact substring match from bundle codes
       let foundCode = false;
-      
+
       // Remove Spaces because we record codes as 1 word and at upper case
       // to handle "mine twin star" not to be confused as star but twinstar
-      let _line = line.toUpperCase().split(" ").join("")
+      let _line = line.toUpperCase().split(" ").join("");
       for (let bundleCode of bundleCodes) {
-        console.log(_line)
-
-        console.log(_line, bundleCode)
         if (_line.endsWith(bundleCode)) {
           if (bundleCode in minersListJSON) {
             minersListJSON[bundleCode].add(line);
@@ -313,18 +310,22 @@ const LiveNotesPage = () => {
       }
 
       if (!foundCode) {
-        newNoCodeMatchLines.push(line);
+        newNoCodeMatchChats.push(line);
       }
     }
 
-    setNoCodeMatchChats(newNoCodeMatchLines);
+    // Merge to a set then convert back to array, to avoid duplicates.
+    const mergedNoNewCodeMatchLines = Array.from(
+      new Set([...newNoCodeMatchChats, ...noCodeMatchChats])
+    );
+
+    setNoCodeMatchChats(mergedNoNewCodeMatchLines);
     setMinersListText(stringifyMinersListJSON(minersListJSON));
     setCurrentState(LiveNotesState.Done);
   };
 
   const handleUndoRecentChanges = () => {
     const backup = localStorage.getItem("__backup__");
-    console.log(backup);
     if (backup !== null) {
       setMinersListText(backup);
       setIntelligentDropText("");
@@ -354,7 +355,7 @@ const LiveNotesPage = () => {
     setMinersListText(stringifyMinersListJSON(minersListJSON));
 
     // Remove line from the Table
-    handleDeleteNoCodeMatchLine(noCodeMatchChat)
+    handleDeleteNoCodeMatchLine(noCodeMatchChat);
     console.log(`Added Line ${noCodeMatchChat} to ${exactCode}`);
   };
 
@@ -362,7 +363,7 @@ const LiveNotesPage = () => {
     setNoCodeMatchChats(
       noCodeMatchChats.filter((val) => val !== noCodeMatchChat)
     );
-  }
+  };
 
   return (
     <Box>
@@ -495,10 +496,12 @@ const LiveNotesPage = () => {
       </Stack>
       {noCodeMatchChats.length > 0 && (
         <TableContainer component={Paper}>
-          <Table>
+          <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>No Exact Code Chats</TableCell>
+                <TableCell>
+                  <b>NO EXACT CODE CHATS</b>
+                </TableCell>
                 <TableCell>Manual Code Input</TableCell>
                 <TableCell>Remove</TableCell>
               </TableRow>
