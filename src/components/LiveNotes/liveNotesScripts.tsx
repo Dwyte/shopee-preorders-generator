@@ -20,6 +20,10 @@ djkhfere twinstar
 
 gwjjfqjh columbia
 f1we18204mine clumbia
+
+fiwbfefdqk btc
+81kndnfowfbitcoin
+fuh3or1dnbitcoin
      */
 
 import { LiveNotes } from "../../types";

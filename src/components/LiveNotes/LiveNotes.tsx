@@ -276,10 +276,18 @@ const LiveNotesPage = () => {
       );
     });
 
-    // sort bundleCodes by length descending to avoid finding 2 codes ie. (twinstar and star);
-    const bundleCodes = getBundleCodes(currentUser).sort(
-      (prev, curr) => curr.length - prev.length
+    // Get bundleCodes for current live Note locally, to remember new bundleCodes
+    const currentBundleCodes = extractBundleCodes([
+      { ...currentUserLiveNote, liveNotes: minersListText },
+    ]);
+
+    // merge current and locally saved, use Set to avoid duplicates
+    let bundleCodes = Array.from(
+      new Set([...currentBundleCodes, ...getBundleCodes(currentUser)])
     );
+
+    // sort bundleCodes by length descending to avoid finding 2 codes ie. (twinstar and star);
+    bundleCodes = bundleCodes.sort((prev, curr) => curr.length - prev.length);
 
     // Let's store lines that didnt include exact code
     const newNoCodeMatchChats: string[] = [];
@@ -452,7 +460,7 @@ const LiveNotesPage = () => {
           my: 1,
           resize: "none",
           cursor: "auto",
-          ":disabled": { bgcolor: "#12151A"  },
+          ":disabled": { bgcolor: "#12151A" },
         }}
         minRows={20}
         maxRows={20}
