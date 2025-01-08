@@ -9,11 +9,13 @@ __nana___Mine tiger
 tres11 and other 15 viewers joined!
 nicolequijanogabrielmine tiger
 
-lloydtrinoma tawitawi
-ronierepaldatwinstar
-myrasolastorgatwinstar
-regie123midnight
+lloydtrinoma tiwtatwia
+ronierepaldatwnstr
+myrasolastorgatnsar
+regie123midniht
 kjdbjqwebflewqk pinas
+djkhfere twinstar
+312h51nrwqkr twin star
      */
 
 import { LiveNotes } from "../../types";

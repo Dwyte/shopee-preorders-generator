@@ -291,9 +291,15 @@ const LiveNotesPage = () => {
 
       // Look for exact substring match from bundle codes
       let foundCode = false;
-
+      
+      // Remove Spaces because we record codes as 1 word and at upper case
+      // to handle "mine twin star" not to be confused as star but twinstar
+      let _line = line.toUpperCase().split(" ").join("")
       for (let bundleCode of bundleCodes) {
-        if (line.toUpperCase().endsWith(bundleCode)) {
+        console.log(_line)
+
+        console.log(_line, bundleCode)
+        if (_line.endsWith(bundleCode)) {
           if (bundleCode in minersListJSON) {
             minersListJSON[bundleCode].add(line);
           } else {
@@ -348,11 +354,15 @@ const LiveNotesPage = () => {
     setMinersListText(stringifyMinersListJSON(minersListJSON));
 
     // Remove line from the Table
+    handleDeleteNoCodeMatchLine(noCodeMatchChat)
+    console.log(`Added Line ${noCodeMatchChat} to ${exactCode}`);
+  };
+
+  const handleDeleteNoCodeMatchLine = (noCodeMatchChat: string) => {
     setNoCodeMatchChats(
       noCodeMatchChats.filter((val) => val !== noCodeMatchChat)
     );
-    console.log(`Added Line ${noCodeMatchChat} to ${exactCode}`);
-  };
+  }
 
   return (
     <Box>
@@ -489,16 +499,18 @@ const LiveNotesPage = () => {
             <TableHead>
               <TableRow>
                 <TableCell>No Exact Code Chats</TableCell>
-                <TableCell>Suggestions</TableCell>
-                <TableCell>Manual Edit</TableCell>
+                <TableCell>Manual Code Input</TableCell>
+                <TableCell>Remove</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {noCodeMatchChats.map((chat) => {
                 return (
                   <NoCodeMatchLine
+                    key={chat}
                     chat={chat}
                     onAdd={handleResolveNoCodeMatchLine}
+                    onDelete={handleDeleteNoCodeMatchLine}
                   />
                 );
               })}
