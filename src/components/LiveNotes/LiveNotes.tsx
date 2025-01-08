@@ -448,7 +448,12 @@ const LiveNotesPage = () => {
         </Stack>
       </Stack>
       <TextareaAutosize
-        sx={{ my: 1, resize: "none", cursor: "auto" }}
+        sx={{
+          my: 1,
+          resize: "none",
+          cursor: "auto",
+          ":disabled": { bgcolor: "#12151A"  },
+        }}
         minRows={20}
         maxRows={20}
         ref={minersListTextInput}
@@ -463,7 +468,7 @@ const LiveNotesPage = () => {
         placeholder="Drag and Drop or Paste Buyers Chats Here (Needs exact Code at the end of chat)"
         minRows={5}
         maxRows={5}
-        sx={{ resize: "none" }}
+        sx={{ resize: "none", ":disabled": { bgcolor: "#12151A" } }}
         onChange={handleIntelligentDropTextChange}
         value={intelligentDropText}
         disabled={canUndo}
