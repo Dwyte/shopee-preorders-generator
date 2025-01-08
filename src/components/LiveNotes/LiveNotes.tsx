@@ -75,7 +75,9 @@ const LiveNotesPage = () => {
   const [canUndo, setCanUndo] = useState(false);
 
   // mapping bundlecode -> miners count added
-  const [recentChangesCount, setRecentChangesCount] = useState<{[key: string]: number}>({});
+  const [recentChangesCount, setRecentChangesCount] = useState<{
+    [key: string]: number;
+  }>({});
   const [recentNoCodeMatchCount, setRecentNoCodeMatchCount] = useState(0);
   const [noCodeMatchChats, setNoCodeMatchChats] = useState<string[]>([]);
 
@@ -101,11 +103,19 @@ const LiveNotesPage = () => {
       setUserLiveNotes((prev) => {
         return prev.filter((v) => v.id !== currentUserLiveNote.id);
       });
-      setMinersListText("");
       setCurrentLiveNote(newLiveNoteTemplate);
     } else {
       setCurrentLiveNote(newLiveNoteTemplate);
     }
+
+    // Reset the shits
+    setMinersListText("");
+    setIntelligentDropText("");
+    setCanUndo(false);
+    setRecentChangesCount({});
+    setNoCodeMatchChats([]);
+    setRecentNoCodeMatchCount(0);
+
     setProgressText("Live Note Deleted!");
     setCurrentState(LiveNotesState.Done);
   };
@@ -423,12 +433,12 @@ const LiveNotesPage = () => {
           sx={{ flexWrap: "wrap" }}
         >
           <Button
-            disabled={currentState === LiveNotesState.Loading}
+            disabled={canUndo || currentState === LiveNotesState.Loading}
             startIcon={<AutoFixHighIcon />}
             variant="contained"
             onClick={handleAddBundleCodeMinersTemplate}
           >
-            Code-Miners Template
+            CODE-MINERS Template
           </Button>
 
           <div style={{ flex: 1 }}></div>
@@ -513,7 +523,7 @@ const LiveNotesPage = () => {
 
         <Stack spacing={1}>
           <Typography>
-            Intelligent Drop Area{" "}
+            Smart Drop Area
             {canUndo && "(Confirm changes before pasting again)"}:
           </Typography>
           <TextareaAutosize
@@ -552,35 +562,35 @@ const LiveNotesPage = () => {
             </Stack>
           </Stack>
         </Stack>
-      </Stack>
 
-      {noCodeMatchChats.length > 0 && (
-        <TableContainer component={Paper}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  <b>NO EXACT CODE CHATS</b>
-                </TableCell>
-                <TableCell>Manual Code Input</TableCell>
-                <TableCell>Remove</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {noCodeMatchChats.map((chat) => {
-                return (
-                  <NoCodeMatchLine
-                    key={chat}
-                    chat={chat}
-                    onAdd={handleResolveNoCodeMatchLine}
-                    onDelete={handleDeleteNoCodeMatchLine}
-                  />
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+        {noCodeMatchChats.length > 0 && (
+          <TableContainer component={Paper}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <b>NO EXACT CODE CHATS</b>
+                  </TableCell>
+                  <TableCell>Manual Code Input</TableCell>
+                  <TableCell>Remove</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {noCodeMatchChats.map((chat) => {
+                  return (
+                    <NoCodeMatchLine
+                      key={chat}
+                      chat={chat}
+                      onAdd={handleResolveNoCodeMatchLine}
+                      onDelete={handleDeleteNoCodeMatchLine}
+                    />
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Stack>
     </Box>
   );
 };
