@@ -568,6 +568,7 @@ const LiveNotesPage = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
+                  <TableCell>No.</TableCell>
                   <TableCell>
                     <b>NO EXACT CODE CHATS</b>
                   </TableCell>
@@ -576,9 +577,10 @@ const LiveNotesPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {noCodeMatchChats.map((chat) => {
+                {noCodeMatchChats.map((chat, index) => {
                   return (
                     <NoCodeMatchLine
+                      index={index + 1}
                       key={chat}
                       chat={chat}
                       onAdd={handleResolveNoCodeMatchLine}

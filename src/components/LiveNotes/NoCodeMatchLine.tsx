@@ -9,10 +9,12 @@ import { useState } from "react";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 const NoCodeMatchChat = ({
+  index,
   chat,
   onAdd,
   onDelete,
 }: {
+  index: number
   chat: string;
   onAdd: (noCodeMatchChat: string, exactCode: string) => void;
   onDelete: (noCodeMatchChat: string) => void
@@ -21,6 +23,7 @@ const NoCodeMatchChat = ({
 
   return (
     <TableRow key={chat}>
+      <TableCell>{index}</TableCell>
       <TableCell>{chat}</TableCell>
       <TableCell>
         <Stack spacing={1} direction={"row"}>
