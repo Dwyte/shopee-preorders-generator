@@ -17,6 +17,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from "@mui/material";
 import TextareaAutosize from "../TextareaAutosize";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -41,6 +42,8 @@ import {
   updateLiveNotes,
 } from "../../api";
 
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import AddIcon from "@mui/icons-material/Add";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import UndoIcon from "@mui/icons-material/Undo";
 import NoCodeMatchLine from "./NoCodeMatchLine";
@@ -71,6 +74,9 @@ const LiveNotesPage = () => {
   const [intelligentDropText, setIntelligentDropText] = useState("");
   const [canUndo, setCanUndo] = useState(false);
 
+  // mapping bundlecode -> miners count added
+  const [recentChangesCount, setRecentChangesCount] = useState<{[key: string]: number}>({});
+  const [recentNoCodeMatchCount, setRecentNoCodeMatchCount] = useState(0);
   const [noCodeMatchChats, setNoCodeMatchChats] = useState<string[]>([]);
 
   useEffect(() => {
@@ -260,9 +266,6 @@ const LiveNotesPage = () => {
 
     setIntelligentDropText(e.target.value);
 
-    // Parse miners list text into JSON format so we can easily add lines
-    let minersListJSON = parseMinersListText(minersListText);
-
     // Get the Lines from the new on-change value
     let lines = e.target.value.split("\n");
 
@@ -292,6 +295,12 @@ const LiveNotesPage = () => {
     // Let's store lines that didnt include exact code
     const newNoCodeMatchChats: string[] = [];
 
+    // Parse miners list text into JSON format so we can easily add lines
+    let minersListJSON = parseMinersListText(minersListText);
+
+    // Track new changes to be made map bcode -> miners count
+    const newChangesCount: { [key: string]: number } = {};
+
     // Loop through the lines
     for (let line of lines) {
       // skip empty lines
@@ -307,8 +316,10 @@ const LiveNotesPage = () => {
         if (_line.endsWith(bundleCode)) {
           if (bundleCode in minersListJSON) {
             minersListJSON[bundleCode].add(line);
+            newChangesCount[bundleCode] += 1;
           } else {
             minersListJSON[bundleCode] = new Set([line]);
+            newChangesCount[bundleCode] = 1;
           }
 
           foundCode = true;
@@ -322,6 +333,8 @@ const LiveNotesPage = () => {
       }
     }
 
+    setRecentChangesCount(newChangesCount);
+    setRecentNoCodeMatchCount(newNoCodeMatchChats.length);
     // Merge to a set then convert back to array, to avoid duplicates.
     const mergedNoNewCodeMatchLines = Array.from(
       new Set([...newNoCodeMatchChats, ...noCodeMatchChats])
@@ -342,6 +355,8 @@ const LiveNotesPage = () => {
   };
 
   const handleConfirm = () => {
+    setRecentChangesCount({});
+    setRecentNoCodeMatchCount(0);
     setIntelligentDropText("");
     setCanUndo(false);
   };
@@ -381,6 +396,7 @@ const LiveNotesPage = () => {
       {currentState === LiveNotesState.Done && (
         <Alert sx={{ mb: 2 }}>Success! {progressText}</Alert>
       )}
+
       <Stack direction={"column"} spacing={1}>
         <FormControl size="small" sx={{ flex: 1 }}>
           <InputLabel id="demo-simple-select-label">{label}</InputLabel>
@@ -454,59 +470,90 @@ const LiveNotesPage = () => {
             SET ORDER NOTES
           </Button>
         </Stack>
-      </Stack>
-      <TextareaAutosize
-        sx={{
-          my: 1,
-          resize: "none",
-          cursor: "auto",
-          ":disabled": { bgcolor: "#12151A" },
-        }}
-        minRows={20}
-        maxRows={20}
-        ref={minersListTextInput}
-        placeholder={liveNotesTextAreaPlaceholder}
-        onChange={(e) => setMinersListText(e.target.value)}
-        value={minersListText}
-        disabled={canUndo || currentState === LiveNotesState.Loading}
-      />
-      Intelligent Drop Area{" "}
-      {canUndo && "(Confirm changes before pasting again)"}:
-      <TextareaAutosize
-        placeholder="Drag and Drop or Paste Buyers Chats Here (Needs exact Code at the end of chat)"
-        minRows={5}
-        maxRows={5}
-        sx={{ resize: "none", ":disabled": { bgcolor: "#12151A" } }}
-        onChange={handleIntelligentDropTextChange}
-        value={intelligentDropText}
-        disabled={canUndo}
-      />
-      <Stack direction={"row"}>
-        <div style={{ flex: 1 }}>
-          {intelligentDropText && (
+
+        <TextareaAutosize
+          sx={{
+            resize: "none",
+            cursor: "auto",
+            ":disabled": { bgcolor: "#12151A" },
+          }}
+          minRows={20}
+          maxRows={20}
+          ref={minersListTextInput}
+          placeholder={liveNotesTextAreaPlaceholder}
+          onChange={(e) => setMinersListText(e.target.value)}
+          value={minersListText}
+          disabled={canUndo || currentState === LiveNotesState.Loading}
+        />
+
+        <Stack direction={"row"} spacing={1}>
+          {Object.keys(recentChangesCount).map((k) => (
             <Chip
+              icon={<AddIcon />}
               size="small"
-              label={`${intelligentDropText.split("\n").length} line(s). `}
+              color="success"
+              label={
+                <b>
+                  {recentChangesCount[k]} {k}
+                </b>
+              }
+            ></Chip>
+          ))}
+
+          {recentNoCodeMatchCount > 0 && (
+            <Chip
+              icon={<ErrorOutlineIcon />}
+              size="small"
+              color="error"
+              variant="outlined"
+              label={<b>{recentNoCodeMatchCount} NO CODE MATCH</b>}
             ></Chip>
           )}
-        </div>
-        <Stack spacing={1} direction="row">
-          <Button
-            startIcon={<UndoIcon />}
-            onClick={handleUndoRecentChanges}
-            disabled={!canUndo}
-          >
-            Undo Changes
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            variant="contained"
-            disabled={!canUndo}
-          >
-            Confirm Changes
-          </Button>
+        </Stack>
+
+        <Stack spacing={1}>
+          <Typography>
+            Intelligent Drop Area{" "}
+            {canUndo && "(Confirm changes before pasting again)"}:
+          </Typography>
+          <TextareaAutosize
+            placeholder="Drag and Drop or Paste Buyers Chats Here (Needs exact Code at the end of chat)"
+            minRows={5}
+            maxRows={5}
+            sx={{ resize: "none", ":disabled": { bgcolor: "#12151A" } }}
+            onChange={handleIntelligentDropTextChange}
+            value={intelligentDropText}
+            disabled={canUndo}
+          />
+          <Stack direction={"row"}>
+            <div style={{ flex: 1 }}>
+              {intelligentDropText && (
+                <Chip
+                  size="small"
+                  label={`${intelligentDropText.split("\n").length} line(s). `}
+                ></Chip>
+              )}
+            </div>
+            <Stack spacing={1} direction="row">
+              <Button
+                startIcon={<UndoIcon />}
+                onClick={handleUndoRecentChanges}
+                disabled={!canUndo}
+              >
+                Undo Changes
+              </Button>
+              <Button
+                onClick={handleConfirm}
+                variant="contained"
+                disabled={!canUndo}
+              >
+                Confirm Changes
+              </Button>
+            </Stack>
+          </Stack>
         </Stack>
       </Stack>
+
       {noCodeMatchChats.length > 0 && (
         <TableContainer component={Paper}>
           <Table size="small">
