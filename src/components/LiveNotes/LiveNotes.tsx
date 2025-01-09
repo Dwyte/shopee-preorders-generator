@@ -4,6 +4,7 @@ import {
   Button,
   Chip,
   FormControl,
+  IconButton,
   InputLabel,
   LinearProgress,
   MenuItem,
@@ -17,6 +18,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import TextareaAutosize from "../TextareaAutosize";
@@ -42,6 +44,8 @@ import {
   updateLiveNotes,
 } from "../../api";
 
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import InfoIcon from "@mui/icons-material/Info";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import AddIcon from "@mui/icons-material/Add";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
@@ -54,6 +58,7 @@ import {
   codeMinersListTemplate,
   parseMinersListText,
   stringifyMinersListJSON,
+  copyChatsExtractorCodeToClipboard,
 } from "./liveNotesScripts";
 
 const LiveNotesPage = () => {
@@ -263,7 +268,7 @@ const LiveNotesPage = () => {
           minersListTextInput.current.scrollHeight;
       }
     }, 0);
-  };
+  }; //hello\nworld
 
   const handleIntelligentDropTextChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
@@ -277,7 +282,9 @@ const LiveNotesPage = () => {
     setIntelligentDropText(e.target.value);
 
     // Get the Lines from the new on-change value
+    console.log(e.target.value);
     let lines = e.target.value.split("\n");
+    console.log(lines);
 
     // Filter out irrelevant lines that may not be related to mine
     lines = lines.filter((line) => {
@@ -397,6 +404,10 @@ const LiveNotesPage = () => {
       noCodeMatchChats.filter((val) => val !== noCodeMatchChat)
     );
   };
+
+  const handleCopyChatsExtractorCode = async () => {
+    await copyChatsExtractorCodeToClipboard();
+  }
 
   return (
     <Box>
@@ -536,6 +547,17 @@ const LiveNotesPage = () => {
             disabled={canUndo}
           />
           <Stack direction={"row"}>
+            <Stack direction={"row"} spacing={1}>
+              <Button startIcon={<ContentCopyIcon />} variant="outlined" onClick={handleCopyChatsExtractorCode}>
+                CHATS EXTRACTOR CODE
+              </Button>
+
+              <Tooltip title="Shopee Live → F12 → Console → Paste Chat Extractor Code → Enter → Copy Chats → Paste Here">
+                <IconButton >
+                  <InfoIcon fontSize="small"/>
+                </IconButton>
+              </Tooltip>
+            </Stack>
             <div style={{ flex: 1 }}>
               {intelligentDropText && (
                 <Chip
