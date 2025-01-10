@@ -418,130 +418,142 @@ const LiveNotesPage = () => {
         <Alert sx={{ mb: 2 }}>Success! {progressText}</Alert>
       )}
 
-      <Stack direction={"column"} spacing={1}>
-        <FormControl size="small" sx={{ flex: 1 }}>
-          <InputLabel id="demo-simple-select-label">{label}</InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            label={label}
-            value={currentUserLiveNote.datetime.toString()}
-            onChange={handleSelectedLiveNotesChange}
+      <Stack direction={"column"} spacing={2}>
+        <Stack spacing={1}>
+          <FormControl size="small" sx={{ flex: 1 }}>
+            <InputLabel id="demo-simple-select-label">{label}</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              label={label}
+              value={currentUserLiveNote.datetime.toString()}
+              onChange={handleSelectedLiveNotesChange}
+            >
+              <MenuItem value={newLiveNoteTemplate.datetime}>NEW LIST</MenuItem>
+              {userLiveNotes.map((liveNote, index) => (
+                <MenuItem key={index} value={liveNote.datetime}>
+                  {timestampToDatetimeText(liveNote.datetime)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Stack
+            direction={"row"}
+            spacing={2}
+            useFlexGap
+            sx={{ flexWrap: "wrap" }}
           >
-            <MenuItem value={newLiveNoteTemplate.datetime}>NEW LIST</MenuItem>
-            {userLiveNotes.map((liveNote, index) => (
-              <MenuItem key={index} value={liveNote.datetime}>
-                {timestampToDatetimeText(liveNote.datetime)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            <Button
+              disabled={canUndo || currentState === LiveNotesState.Loading}
+              startIcon={<AutoFixHighIcon />}
+              variant="contained"
+              onClick={handleAddBundleCodeMinersTemplate}
+            >
+              CODE-MINERS Template
+            </Button>
 
-        <Stack
-          direction={"row"}
-          spacing={1}
-          useFlexGap
-          sx={{ flexWrap: "wrap" }}
-        >
-          <Button
-            disabled={canUndo || currentState === LiveNotesState.Loading}
-            startIcon={<AutoFixHighIcon />}
-            variant="contained"
-            onClick={handleAddBundleCodeMinersTemplate}
-          >
-            CODE-MINERS Template
-          </Button>
+            <div style={{ flex: 1 }}></div>
 
-          <div style={{ flex: 1 }}></div>
-
-          <Button
-            variant="outlined"
-            color="error"
-            onClick={handleDelete}
-            disabled={
-              currentState === LiveNotesState.Loading ||
-              minersListText.length === 0
-            }
-          >
-            <DeleteIcon />
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            disabled={
-              currentState === LiveNotesState.Loading ||
-              minersListText.length === 0 ||
-              currentUserLiveNote.liveNotes === minersListText
-            }
-            onClick={handleSave}
-          >
-            <SaveIcon />
-          </Button>
-
-          <Button
-            startIcon={<SendIcon />}
-            variant="contained"
-            color="info"
-            onClick={handleSendNotesToBigSeller}
-            disabled={
-              currentState === LiveNotesState.Loading ||
-              minersListText.length === 0
-            }
-          >
-            SET ORDER NOTES
-          </Button>
-        </Stack>
-
-        <TextareaAutosize
-          sx={{
-            resize: "none",
-            cursor: "auto",
-            ":disabled": { bgcolor: "#12151A" },
-          }}
-          minRows={20}
-          maxRows={20}
-          ref={minersListTextInput}
-          placeholder={liveNotesTextAreaPlaceholder}
-          onChange={(e) => setMinersListText(e.target.value)}
-          value={minersListText}
-          disabled={canUndo || currentState === LiveNotesState.Loading}
-        />
-
-        <Stack
-          direction={"row"}
-          spacing={1}
-          useFlexGap
-          sx={{ flexWrap: "wrap" }}
-        >
-          {Object.keys(recentChangesCount).map((k) => (
-            <Chip
-              icon={<AddIcon />}
-              size="small"
-              color="success"
-              label={
-                <b>
-                  {recentChangesCount[k]} {k}
-                </b>
-              }
-            ></Chip>
-          ))}
-
-          {recentNoCodeMatchCount > 0 && (
-            <Chip
-              icon={<ErrorOutlineIcon />}
-              size="small"
-              color="error"
+            <Button
               variant="outlined"
-              label={<b>{recentNoCodeMatchCount} NO CODE MATCH</b>}
-            ></Chip>
-          )}
+              color="error"
+              onClick={handleDelete}
+              disabled={
+                currentState === LiveNotesState.Loading ||
+                minersListText.length === 0
+              }
+            >
+              <DeleteIcon />
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              disabled={
+                currentState === LiveNotesState.Loading ||
+                minersListText.length === 0 ||
+                currentUserLiveNote.liveNotes === minersListText
+              }
+              onClick={handleSave}
+            >
+              <SaveIcon />
+            </Button>
+
+            <Button
+              startIcon={<SendIcon />}
+              variant="contained"
+              color="info"
+              onClick={handleSendNotesToBigSeller}
+              disabled={
+                currentState === LiveNotesState.Loading ||
+                minersListText.length === 0
+              }
+            >
+              SET ORDER NOTES
+            </Button>
+          </Stack>
+
+          <TextareaAutosize
+            sx={{
+              resize: "none",
+              cursor: "auto",
+              ":disabled": { bgcolor: "#12151A" },
+            }}
+            minRows={20}
+            maxRows={20}
+            ref={minersListTextInput}
+            placeholder={liveNotesTextAreaPlaceholder}
+            onChange={(e) => setMinersListText(e.target.value)}
+            value={minersListText}
+            disabled={canUndo || currentState === LiveNotesState.Loading}
+          />
+
+          <Stack
+            direction={"row"}
+            spacing={1}
+            useFlexGap
+            sx={{ flexWrap: "wrap" }}
+          >
+            {Object.keys(recentChangesCount).map((k) => (
+              <Chip
+                icon={<AddIcon />}
+                size="small"
+                color="success"
+                label={
+                  <b>
+                    {recentChangesCount[k]} {k}
+                  </b>
+                }
+              ></Chip>
+            ))}
+
+            {recentNoCodeMatchCount > 0 && (
+              <Chip
+                icon={<ErrorOutlineIcon />}
+                size="small"
+                color="error"
+                variant="outlined"
+                label={<b>{recentNoCodeMatchCount} NO CODE MATCH</b>}
+              ></Chip>
+            )}
+          </Stack>
         </Stack>
 
         <Stack spacing={1}>
-          <Typography>
-            Smart Drop Area
-            {canUndo && "(Confirm changes before pasting again)"}:
-          </Typography>
+          <Stack direction={"row"} spacing={1}>
+            <Typography>
+              Smart Drop Area
+              {canUndo && " (Confirm changes before pasting again)"}:
+            </Typography>
+            <div style={{ flex: 1 }}></div>
+            {intelligentDropText && (
+              <Chip
+                size="small"
+                label={`${intelligentDropText.split("\n").length} line(s). `}
+              ></Chip>
+            )}
+          </Stack>
+
           <TextareaAutosize
             placeholder="Drag and Drop or Paste Buyers Chats Here (Needs exact Code at the end of chat)"
             minRows={5}
@@ -551,30 +563,24 @@ const LiveNotesPage = () => {
             value={intelligentDropText}
             disabled={canUndo}
           />
-          <Stack direction={"row"}>
-            <Stack direction={"row"} spacing={1}>
-              <Button
-                startIcon={<ContentCopyIcon />}
-                variant="outlined"
-                onClick={handleCopyChatsExtractorCode}
-              >
-                CHATS EXTRACTOR CODE
-              </Button>
 
-              <Tooltip title="Shopee Live → F12 → Console → Paste Chat Extractor Code → Enter → Copy Chats → Paste Here">
-                <IconButton>
-                  <InfoIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-            <div style={{ flex: 1 }}>
-              {intelligentDropText && (
-                <Chip
-                  size="small"
-                  label={`${intelligentDropText.split("\n").length} line(s). `}
-                ></Chip>
-              )}
-            </div>
+          <Stack direction={"row"}>
+            <Button
+              startIcon={<ContentCopyIcon />}
+              variant="outlined"
+              onClick={handleCopyChatsExtractorCode}
+            >
+              CHATS EXTRACTOR CODE
+            </Button>
+
+            <Tooltip title="Shopee Live → F12 → Console → Paste Chat Extractor Code → Enter → Copy Chats → Paste Here">
+              <IconButton>
+                <InfoIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            <div style={{ flex: 1 }}></div>
+
             <Stack spacing={1} direction="row">
               <Button
                 startIcon={<UndoIcon />}
@@ -603,7 +609,9 @@ const LiveNotesPage = () => {
                   <TableCell>
                     <b>NO EXACT CODE CHATS</b>
                   </TableCell>
-                  <TableCell>Manual Code Input</TableCell>
+                  <TableCell sx={{ minWidth: "200px" }}>
+                    Manual Code Input
+                  </TableCell>
                   <TableCell>Remove</TableCell>
                 </TableRow>
               </TableHead>

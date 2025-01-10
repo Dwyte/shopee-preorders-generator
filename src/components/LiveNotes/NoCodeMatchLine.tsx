@@ -4,8 +4,11 @@ import {
   TextField,
   Button,
   Stack,
+  IconButton,
 } from "@mui/material";
 import { useState } from "react";
+
+import AddIcon from '@mui/icons-material/Add';
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 const NoCodeMatchChat = ({
@@ -14,10 +17,10 @@ const NoCodeMatchChat = ({
   onAdd,
   onDelete,
 }: {
-  index: number
+  index: number;
   chat: string;
   onAdd: (noCodeMatchChat: string, exactCode: string) => void;
-  onDelete: (noCodeMatchChat: string) => void
+  onDelete: (noCodeMatchChat: string) => void;
 }) => {
   const [code, setCode] = useState("");
 
@@ -33,15 +36,15 @@ const NoCodeMatchChat = ({
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
           />
-          <Button variant="contained" onClick={() => onAdd(chat, code)}>
-            Add
+          <Button size="small" variant="contained" onClick={() => onAdd(chat, code)}>
+            <AddIcon />
           </Button>
         </Stack>
       </TableCell>
-      <TableCell>
-        <Button color="error" variant="outlined" onClick={() => onDelete(chat)}>
-          <DeleteForeverIcon />
-        </Button>
+      <TableCell sx={{textAlign: "center"}}>
+        <IconButton onClick={() => onDelete(chat)}>
+          <DeleteForeverIcon color="error"/>
+        </IconButton>
       </TableCell>
     </TableRow>
   );
