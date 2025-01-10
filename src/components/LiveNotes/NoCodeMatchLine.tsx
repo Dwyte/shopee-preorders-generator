@@ -33,7 +33,7 @@ const NoCodeMatchChat = ({ data, onAdd, onDelete }: Props) => {
             sx={{ flex: 1 }}
             options={data.suggestions}
             inputValue={code}
-            onInputChange={(e, newInputValue) =>
+            onInputChange={(_, newInputValue) =>
               setCode(newInputValue.toUpperCase())
             }
             renderInput={(params) => (

@@ -63,6 +63,8 @@ import {
   NoCodeMatchChats,
 } from "./liveNotesScripts";
 
+type LoadingVariant = "indeterminate" | "determinate";
+
 const LiveNotesPage = () => {
   const label = "Select Date";
   const [currentUserLiveNote, setCurrentLiveNote] =
@@ -73,6 +75,9 @@ const LiveNotesPage = () => {
   const [currentState, setCurrentState] = useState<LiveNotesState>(
     LiveNotesState.Initial
   );
+
+  const [loadingVariant, setLoadingVariant] =
+    useState<LoadingVariant>("determinate");
   const [progress, setProgress] = useState(0);
   const { currentUser, userSettings } = useContext(UserSettingsContext);
 
@@ -282,11 +287,11 @@ const LiveNotesPage = () => {
 
     // Set state to loading so user can't edit the main text area.
     setCurrentState(LiveNotesState.Loading);
+    setLoadingVariant("indeterminate");
 
     setIntelligentDropText(e.target.value);
 
     setTimeout(() => {
-      setProgress(25);
       // Get the Lines from the new on-change value
       let lines = e.target.value.split("\n");
 
@@ -418,6 +423,7 @@ const LiveNotesPage = () => {
       setNoCodeMatchChats(mergedNoNewCodeMatchLines);
       setMinersListText(stringifyMinersListJSON(minersListJSON));
       setCurrentState(LiveNotesState.Done);
+      setLoadingVariant("determinate");
     }, 500);
   };
 
@@ -471,8 +477,13 @@ const LiveNotesPage = () => {
   return (
     <Box>
       {currentState === LiveNotesState.Loading && (
-        <LinearProgress sx={{ mb: 2 }} variant="determinate" value={progress} />
+        <LinearProgress
+          sx={{ mb: 2 }}
+          variant={loadingVariant}
+          value={progress}
+        />
       )}
+
       {currentState === LiveNotesState.Done && (
         <Alert sx={{ mb: 2 }}>Success! {progressText}</Alert>
       )}
@@ -674,7 +685,7 @@ const LiveNotesPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {noCodeMatchChats.map((chat, index) => {
+                {noCodeMatchChats.map((chat) => {
                   return (
                     <NoCodeMatchLine
                       key={chat.id}
