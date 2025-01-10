@@ -28,6 +28,11 @@ fuh3or1dnbitcoin
 
 import { LiveNotes } from "../../types";
 
+export type NoCodeMatchChats = {
+  id: number;
+  chat: string;
+  suggestions: string[];
+};
 
 export enum LiveNotesState {
   Initial,
@@ -73,7 +78,6 @@ export const parseMinersListText = (minersListText: string): MinersListJSON => {
   for (let line of minersListTextLines) {
     if (line.startsWith("CODE:")) {
       currentCode = line.replace("CODE:", "").trim().toUpperCase();
-      console.log(currentCode);
       // Check if empty string
       if (currentCode) {
         minersListJSON[currentCode] = new Set([]);
@@ -113,8 +117,10 @@ export const stringifyMinersListJSON = (minersListJSON: MinersListJSON) => {
   return newMinersListTextArray.join("\n") + "\n";
 };
 
-export const copyChatsExtractorCodeToClipboard =  async() => {
-  const code: string = `const targetElement=document.getElementById("root"),chatsSet={},observerCallback=(e,t)=>{e.forEach(e=>{"childList"===e.type&&e.addedNodes.forEach(e=>{if(1===e.nodeType){let t=e.getAttribute("data-comment-id");if("false"===e.getAttribute("data-comment-id"))e.hidden=!0;else{commendId=parseInt(e.getAttribute("data-comment-id")),e.getElementsByClassName("user-name_2fad3")[0].innerHTML+=": ";let a=e.getElementsByClassName("user-name_2fad3")[0].innerHTML,s=e.getElementsByClassName("message-content_3bb92")[0].innerHTML,n=a+s;n in chatsSet||(chatsSet[t]=n)}}})})},observer=new MutationObserver(observerCallback);observer.observe(targetElement,{childList:!0,subtree:!0}),console.log("Scroll though the chats, then type 'copyChats()' here after.");const copyChats=()=>{let e=Object.keys(chatsSet).sort((e,t)=>e-t).map(e=>chatsSet[e]).join("\n");console.log(e)};`
+export const copyChatsExtractorCodeToClipboard = async () => {
+  const code: string = `const targetElement=document.getElementById("root"),chatsSet={},observerCallback=(e,t)=>{e.forEach(e=>{"childList"===e.type&&e.addedNodes.forEach(e=>{if(1===e.nodeType){let t=e.getAttribute("data-comment-id");if("false"===e.getAttribute("data-comment-id"))e.hidden=!0;else{commendId=parseInt(e.getAttribute("data-comment-id")),e.getElementsByClassName("user-name_2fad3")[0].innerHTML+=": ";let a=e.getElementsByClassName("user-name_2fad3")[0].innerHTML,s=e.getElementsByClassName("message-content_3bb92")[0].innerHTML,n=a+s;n in chatsSet||(chatsSet[t]=n)}}})})},observer=new MutationObserver(observerCallback);observer.observe(targetElement,{childList:!0,subtree:!0}),console.log("Scroll though the chats, then type 'copyChats()' here after.");const copyChats=()=>{let e=Object.keys(chatsSet).sort((e,t)=>e-t).map(e=>chatsSet[e]).join("\n");console.log(e)};`;
   await navigator.clipboard.writeText(code);
-  alert("Copied code to clipboard.\nGo to Shopee Live → F12 → Console → Paste Chat Extractor Code → Enter → Copy Chats → Paste to Smart Drop Area")
-}
+  alert(
+    "Copied code to clipboard.\nGo to Shopee Live → F12 → Console → Paste Chat Extractor Code → Enter → Copy Chats → Paste to Smart Drop Area"
+  );
+};

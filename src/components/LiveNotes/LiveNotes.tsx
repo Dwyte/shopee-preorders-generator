@@ -59,6 +59,7 @@ import {
   parseMinersListText,
   stringifyMinersListJSON,
   copyChatsExtractorCodeToClipboard,
+  NoCodeMatchChats,
 } from "./liveNotesScripts";
 
 const LiveNotesPage = () => {
@@ -84,7 +85,9 @@ const LiveNotesPage = () => {
     [key: string]: number;
   }>({});
   const [recentNoCodeMatchCount, setRecentNoCodeMatchCount] = useState(0);
-  const [noCodeMatchChats, setNoCodeMatchChats] = useState<string[]>([]);
+  const [noCodeMatchChats, setNoCodeMatchChats] = useState<NoCodeMatchChats[]>(
+    []
+  );
 
   useEffect(() => {
     const initializeLiveNotes = async () => {
@@ -310,7 +313,7 @@ const LiveNotesPage = () => {
     bundleCodes = bundleCodes.sort((prev, curr) => curr.length - prev.length);
 
     // Let's store lines that didnt include exact code
-    const newNoCodeMatchChats: string[] = [];
+    const newNoCodeMatchChats: NoCodeMatchChats[] = [];
 
     // Parse miners list text into JSON format so we can easily add lines
     let minersListJSON = parseMinersListText(minersListText);
@@ -346,7 +349,11 @@ const LiveNotesPage = () => {
       }
 
       if (!foundCode) {
-        newNoCodeMatchChats.push(line);
+        newNoCodeMatchChats.push({
+          id: noCodeMatchChats.length + newNoCodeMatchChats.length,
+          chat: line,
+          suggestions: ["TAWITAWI", "MARAWI", "TWINSTAR"],
+        });
       }
     }
 
@@ -401,7 +408,7 @@ const LiveNotesPage = () => {
 
   const handleDeleteNoCodeMatchLine = (noCodeMatchChat: string) => {
     setNoCodeMatchChats(
-      noCodeMatchChats.filter((val) => val !== noCodeMatchChat)
+      noCodeMatchChats.filter((val) => val.chat !== noCodeMatchChat)
     );
   };
 
@@ -609,9 +616,7 @@ const LiveNotesPage = () => {
                   <TableCell>
                     <b>NO EXACT CODE CHATS</b>
                   </TableCell>
-                  <TableCell sx={{ minWidth: "200px" }}>
-                    Manual Code Input
-                  </TableCell>
+                  <TableCell>Manual Code Input</TableCell>
                   <TableCell>Remove</TableCell>
                 </TableRow>
               </TableHead>
@@ -620,8 +625,8 @@ const LiveNotesPage = () => {
                   return (
                     <NoCodeMatchLine
                       index={index + 1}
-                      key={chat}
-                      chat={chat}
+                      key={chat.id}
+                      data={chat}
                       onAdd={handleResolveNoCodeMatchLine}
                       onDelete={handleDeleteNoCodeMatchLine}
                     />
