@@ -407,7 +407,7 @@ const LiveNotesPage = () => {
 
   const handleCopyChatsExtractorCode = async () => {
     await copyChatsExtractorCodeToClipboard();
-  }
+  };
 
   return (
     <Box>
@@ -507,7 +507,12 @@ const LiveNotesPage = () => {
           disabled={canUndo || currentState === LiveNotesState.Loading}
         />
 
-        <Stack direction={"row"} spacing={1}>
+        <Stack
+          direction={"row"}
+          spacing={1}
+          useFlexGap
+          sx={{ flexWrap: "wrap" }}
+        >
           {Object.keys(recentChangesCount).map((k) => (
             <Chip
               icon={<AddIcon />}
@@ -548,13 +553,17 @@ const LiveNotesPage = () => {
           />
           <Stack direction={"row"}>
             <Stack direction={"row"} spacing={1}>
-              <Button startIcon={<ContentCopyIcon />} variant="outlined" onClick={handleCopyChatsExtractorCode}>
+              <Button
+                startIcon={<ContentCopyIcon />}
+                variant="outlined"
+                onClick={handleCopyChatsExtractorCode}
+              >
                 CHATS EXTRACTOR CODE
               </Button>
 
               <Tooltip title="Shopee Live → F12 → Console → Paste Chat Extractor Code → Enter → Copy Chats → Paste Here">
-                <IconButton >
-                  <InfoIcon fontSize="small"/>
+                <IconButton>
+                  <InfoIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             </Stack>
