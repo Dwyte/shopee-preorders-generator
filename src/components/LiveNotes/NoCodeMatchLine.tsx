@@ -14,18 +14,17 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { NoCodeMatchChats } from "./liveNotesScripts";
 
 type Props = {
-  index: number;
   data: NoCodeMatchChats;
   onAdd: (noCodeMatchChat: string, exactCode: string) => void;
   onDelete: (noCodeMatchChat: string) => void;
 };
 
-const NoCodeMatchChat = ({ index, data, onAdd, onDelete }: Props) => {
-  const [code, setCode] = useState("");
+const NoCodeMatchChat = ({ data, onAdd, onDelete }: Props) => {
+  const [code, setCode] = useState(data.suggestions[0] || "");
 
   return (
     <TableRow>
-      <TableCell>{index}</TableCell>
+      <TableCell>{data.id + 1}</TableCell>
       <TableCell>{data.chat}</TableCell>
       <TableCell>
         <Stack spacing={1} direction={"row"} sx={{ minWidth: "225px" }}>

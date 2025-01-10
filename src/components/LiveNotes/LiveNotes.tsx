@@ -44,6 +44,7 @@ import {
   updateLiveNotes,
 } from "../../api";
 
+import stringComparison from "string-comparison";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import InfoIcon from "@mui/icons-material/Info";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
@@ -284,89 +285,140 @@ const LiveNotesPage = () => {
 
     setIntelligentDropText(e.target.value);
 
-    // Get the Lines from the new on-change value
-    console.log(e.target.value);
-    let lines = e.target.value.split("\n");
-    console.log(lines);
+    setTimeout(() => {
+      setProgress(25);
+      // Get the Lines from the new on-change value
+      let lines = e.target.value.split("\n");
 
-    // Filter out irrelevant lines that may not be related to mine
-    lines = lines.filter((line) => {
-      return !(
-        line.includes("buying") ||
-        line.includes("joined") ||
-        line.includes("followed") ||
-        line.includes("flex")
-      );
-    });
+      // Filter out irrelevant lines that may not be related to mine
+      lines = lines.filter((line) => {
+        const blacklistWords = [
+          "buying",
+          "joined",
+          "followed",
+          "flex",
+          "ssd",
+          "checkout",
+          "shopeefam!",
+          "powertap",
+          "done",
+          "cod",
+        ];
 
-    // Get bundleCodes for current live Note locally, to remember new bundleCodes
-    const currentBundleCodes = extractBundleCodes([
-      { ...currentUserLiveNote, liveNotes: minersListText },
-    ]);
-
-    // merge current and locally saved, use Set to avoid duplicates
-    let bundleCodes = Array.from(
-      new Set([...currentBundleCodes, ...getBundleCodes(currentUser)])
-    );
-
-    // sort bundleCodes by length descending to avoid finding 2 codes ie. (twinstar and star);
-    bundleCodes = bundleCodes.sort((prev, curr) => curr.length - prev.length);
-
-    // Let's store lines that didnt include exact code
-    const newNoCodeMatchChats: NoCodeMatchChats[] = [];
-
-    // Parse miners list text into JSON format so we can easily add lines
-    let minersListJSON = parseMinersListText(minersListText);
-
-    // Track new changes to be made map bcode -> miners count
-    const newChangesCount: { [key: string]: number } = {};
-
-    // Loop through the lines
-    for (let line of lines) {
-      // skip empty lines
-      if (line.trim() === "") continue;
-
-      // Look for exact substring match from bundle codes
-      let foundCode = false;
-
-      // Remove Spaces because we record codes as 1 word and at upper case
-      // to handle "mine twin star" not to be confused as star but twinstar
-      let _line = line.toUpperCase().split(" ").join("");
-      for (let bundleCode of bundleCodes) {
-        if (_line.endsWith(bundleCode)) {
-          if (bundleCode in minersListJSON) {
-            minersListJSON[bundleCode].add(line);
-            newChangesCount[bundleCode] += 1;
-          } else {
-            minersListJSON[bundleCode] = new Set([line]);
-            newChangesCount[bundleCode] = 1;
+        // Skip first word (username), filter base only on message
+        const lcLine = line.split(" ").slice(1).join("").toLowerCase();
+        for (let word of blacklistWords) {
+          if (lcLine.includes(word)) {
+            return false;
           }
-
-          foundCode = true;
         }
 
-        if (foundCode) break;
+        return true;
+      });
+
+      // Get bundleCodes for current live Note locally, to remember new bundleCodes
+      const currentBundleCodes = extractBundleCodes([
+        { ...currentUserLiveNote, liveNotes: minersListText },
+      ]);
+
+      // merge current and locally saved, use Set to avoid duplicates
+      let bundleCodes = Array.from(
+        new Set([...currentBundleCodes, ...getBundleCodes(currentUser)])
+      );
+
+      // sort bundleCodes by length descending to avoid finding 2 codes ie. (twinstar and star);
+      bundleCodes = bundleCodes.sort((prev, curr) => curr.length - prev.length);
+
+      // Let's store lines that didnt include exact code
+      const newNoCodeMatchChats: NoCodeMatchChats[] = [];
+
+      // Parse miners list text into JSON format so we can easily add lines
+      let minersListJSON = parseMinersListText(minersListText);
+
+      // Track new changes to be made map bcode -> miners count
+      const newChangesCount: { [key: string]: number } = {};
+
+      // Loop through the lines
+      for (let line of lines) {
+        // skip empty lines
+        if (line.trim() === "") continue;
+
+        // Look for exact substring match from bundle codes
+        let foundCode = false;
+
+        // Remove Spaces because we record codes as 1 word and at upper case
+        // to handle "mine twin star" not to be confused as star but twinstar
+        let _line = line.toUpperCase().split(" ").join("");
+        for (let bundleCode of bundleCodes) {
+          if (_line.endsWith(bundleCode)) {
+            if (bundleCode in minersListJSON) {
+              minersListJSON[bundleCode].add(line);
+              newChangesCount[bundleCode] += 1;
+            } else {
+              minersListJSON[bundleCode] = new Set([line]);
+              newChangesCount[bundleCode] = 1;
+            }
+
+            foundCode = true;
+          }
+
+          if (foundCode) break;
+        }
+
+        if (!foundCode) {
+          const suggestions = [];
+
+          // Split by words, remove empty strings and skip the first (username);
+          const lineWords = line
+            .toUpperCase()
+            .split(" ")
+            .filter((v) => v !== "")
+            .slice(1);
+
+          for (let word of lineWords) {
+            const r = stringComparison.jaroWinkler.sortMatch(word, bundleCodes);
+
+            // Skip Mine
+            if (stringComparison.jaroWinkler.similarity(word, "MINE") > 0.9) {
+              continue;
+            }
+
+            if (isNaN(Number(word))) {
+              // loop through r in reverse order
+              for (let i = r.length - 1; i >= 0; i--) {
+                if (r[i].rating > 0.9) {
+                  suggestions.push(r[i]);
+                } else {
+                  break;
+                }
+              }
+            } else {
+              suggestions.push({ member: word, rating: 1 });
+            }
+          }
+
+          newNoCodeMatchChats.push({
+            id: noCodeMatchChats.length + newNoCodeMatchChats.length,
+            chat: line,
+            suggestions: suggestions
+              .sort((a, b) => b.rating - a.rating)
+              .map((a) => a.member),
+          });
+        }
       }
 
-      if (!foundCode) {
-        newNoCodeMatchChats.push({
-          id: noCodeMatchChats.length + newNoCodeMatchChats.length,
-          chat: line,
-          suggestions: ["TAWITAWI", "MARAWI", "TWINSTAR"],
-        });
-      }
-    }
+      // Merge to a set then convert back to array, to avoid duplicates.
+      const mergedNoNewCodeMatchLines = Array.from(
+        new Set([...newNoCodeMatchChats, ...noCodeMatchChats])
+      );
 
-    setRecentChangesCount(newChangesCount);
-    setRecentNoCodeMatchCount(newNoCodeMatchChats.length);
-    // Merge to a set then convert back to array, to avoid duplicates.
-    const mergedNoNewCodeMatchLines = Array.from(
-      new Set([...newNoCodeMatchChats, ...noCodeMatchChats])
-    );
+      setRecentChangesCount(newChangesCount);
+      setRecentNoCodeMatchCount(newNoCodeMatchChats.length);
 
-    setNoCodeMatchChats(mergedNoNewCodeMatchLines);
-    setMinersListText(stringifyMinersListJSON(minersListJSON));
-    setCurrentState(LiveNotesState.Done);
+      setNoCodeMatchChats(mergedNoNewCodeMatchLines);
+      setMinersListText(stringifyMinersListJSON(minersListJSON));
+      setCurrentState(LiveNotesState.Done);
+    }, 500);
   };
 
   const handleUndoRecentChanges = () => {
@@ -524,6 +576,7 @@ const LiveNotesPage = () => {
             {Object.keys(recentChangesCount).map((k) => (
               <Chip
                 icon={<AddIcon />}
+                key={k}
                 size="small"
                 color="success"
                 label={
@@ -614,7 +667,7 @@ const LiveNotesPage = () => {
                 <TableRow>
                   <TableCell>No.</TableCell>
                   <TableCell>
-                    <b>NO EXACT CODE CHATS</b>
+                    <b>NO EXACT CODE CHATS ({noCodeMatchChats.length})</b>
                   </TableCell>
                   <TableCell>Manual Code Input</TableCell>
                   <TableCell>Remove</TableCell>
@@ -624,7 +677,6 @@ const LiveNotesPage = () => {
                 {noCodeMatchChats.map((chat, index) => {
                   return (
                     <NoCodeMatchLine
-                      index={index + 1}
                       key={chat.id}
                       data={chat}
                       onAdd={handleResolveNoCodeMatchLine}
